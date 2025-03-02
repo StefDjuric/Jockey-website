@@ -1,0 +1,165 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                            Int       @id @default(autoincrement())
+  username                      String    @unique
+  email                         String    @unique
+  password                      String?
+  avatar                        String?
+  forgotPasswordToken           String?
+  forgotPasswordTokenExpiration DateTime?
+  lastLogin                     DateTime?
+  createdAt                     DateTime  @default(now())
+  isActive                      Boolean   @default(true)
+
+  oAuthConnection  UserOAuth[]
+  createdPlaylists Playlist[]         @relation("PlaylistCreator")
+  memberships      PlaylistMember[]
+  addedSongs       PlaylistSong[]     @relation("SongAdder")
+  votes            SongVote[]
+  chatMessages     ChatMessage[]
+  activities       PlaylistActivity[]
+
+  @@map("users")
+}
+
+model UserOAuth {
+  id             Int       @id @default(autoincrement())
+  userId         Int
+  provider       String
+  providerUserId String
+  accessToken    String?
+  refreshToken   String?
+  tokenExpiresAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId])
+  @@map("user_oauth")
+}
+
+model Playlist {
+  id              Int      @id @default(autoincrement())
+  creatorId       Int
+  name            String
+  description     String?
+  coverImage      String?
+  isPublic        Boolean  @default(true)
+  isCollaborative Boolean  @default(true)
+  shareCode       String?  @unique
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  creator      User               @relation("PlaylistCreator", fields: [creatorId], references: [id])
+  members      PlaylistMember[]
+  songs        PlaylistSong[]
+  chatMessages ChatMessage[]
+  activities   PlaylistActivity[]
+
+  @@map("playlists")
+}
+
+model PlaylistMember {
+  id         Int      @id @default(autoincrement())
+  playlistId Int
+  userId     Int
+  role       String   @default("member")
+  joinedAt   DateTime @default(now())
+
+  playlist Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([playlistId, userId])
+  @@map("playlist_members")
+}
+
+model Song {
+  id          Int       @id @default(autoincrement())
+  title       String
+  artist      String
+  album       String?
+  duration    Int?
+  releaseDate DateTime?
+  albumArtURL String?
+  previewURL  String?
+  spotifyId   String?   @unique
+  youtubeId   String?   @unique
+  createdAt   DateTime  @default(now())
+
+  playlistSongs PlaylistSong[]
+
+  @@map("songs")
+}
+
+model PlaylistSong {
+  id           Int       @id @default(autoincrement())
+  playlistId   Int
+  songId       Int
+  addedById    Int
+  addedAt      DateTime  @default(now())
+  position     Int
+  isPlayed     Boolean   @default(false)
+  lastPlayedAt DateTime?
+
+  playlist Playlist   @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  song     Song       @relation(fields: [songId], references: [id], onDelete: Cascade)
+  addedBy  User       @relation("SongAdder", fields: [addedById], references: [id], onDelete: Cascade)
+  votes    SongVote[]
+
+  @@unique([playlistId, position])
+  @@map("playlist_songs")
+}
+
+model SongVote {
+  id             Int      @id @default(autoincrement())
+  playlistSongId Int
+  userId         Int
+  voteTime       DateTime @default(now())
+
+  playlistSong PlaylistSong @relation(fields: [playlistSongId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([playlistSongId, userId])
+  @@map("song_votes")
+}
+
+model ChatMessage {
+  id              Int      @id @default(autoincrement())
+  playlistId      Int
+  userId          Int
+  message         String
+  sentAt          DateTime @default(now())
+  isSystemMessage Boolean  @default(false)
+
+  playlist Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id])
+
+  @@map("chat_messages")
+}
+
+model PlaylistActivity {
+  id         Int      @id @default(autoincrement())
+  playlistId Int
+  userId     Int
+  actionType String
+  entityId   Int?
+  createdAt  DateTime @default(now())
+
+  playlist Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id])
+
+  @@map("playlist_activity")
+}
