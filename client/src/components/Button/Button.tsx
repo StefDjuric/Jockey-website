@@ -6,11 +6,24 @@ type ButtonProps = {
     icon?: string;
     styling: string;
     onClick?: MouseEventHandler<HTMLButtonElement>;
+    disabled?: boolean;
 };
 
-function Button({ type, label, styling, icon, onClick }: ButtonProps) {
+function Button({
+    type,
+    label,
+    styling,
+    icon,
+    onClick,
+    disabled,
+}: ButtonProps) {
     return (
-        <button className={`${styling}`} type={type} onClick={onClick}>
+        <button
+            className={`${styling}`}
+            type={type}
+            onClick={onClick}
+            disabled={disabled}
+        >
             {icon && <img src={icon} alt={label} width={24} height={24} />}
             {label}
         </button>
