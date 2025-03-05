@@ -1,6 +1,6 @@
 import bgImage from "../assets/bg-image.jpg";
 import Button from "./Button/Button";
-
+import { Link } from "react-router-dom";
 function Home() {
     return (
         <main
@@ -22,16 +22,21 @@ function Home() {
                     </p>
                 </div>
                 <div className="flex flex-col justify-around items-center gap-5 w-full">
-                    <Button
-                        label="Sign Up"
-                        type="button"
-                        styling="rounded-full w-[40%] text-lg px-4 py-4 bg-[#ffc300] text-white hover:cursor-pointer hover:bg-[#aa8304]"
-                    />
-                    <Button
-                        label="Log In"
-                        type="button"
-                        styling="rounded-full w-[40%] text-lg px-4 py-4 bg-[#003566] text-white hover:cursor-pointer hover:bg-[#192a39]"
-                    />
+                    <Link to={"/signup"}>
+                        <Button
+                            label="Sign Up"
+                            type="button"
+                            styling="rounded-full w-full min-w-[200px] text-lg px-4 py-4 bg-[#ffc300] text-white hover:cursor-pointer hover:bg-[#aa8304]"
+                        />
+                    </Link>
+
+                    <Link to={"/login"}>
+                        <Button
+                            label="Log In"
+                            type="button"
+                            styling="rounded-full w-full min-w-[200px] text-lg px-4 py-4 bg-[#003566] text-white hover:cursor-pointer hover:bg-[#192a39]"
+                        />
+                    </Link>
                 </div>
             </div>
         </main>

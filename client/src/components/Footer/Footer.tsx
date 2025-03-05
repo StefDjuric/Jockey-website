@@ -1,11 +1,16 @@
 import instagramSvg from "../../assets/instagram.svg";
 import facebookSvg from "../../assets/facebook.svg";
+import { Link } from "react-router-dom";
 
 function Footer(): React.ReactElement {
     return (
         <footer className="flex justify-center items-center poppins-regular mt-5 pb-5">
             <div className="mx-auto max-w-[1440px] px-6 lg:px-20 3xl:px-0 flex w-full lg:justify-between flex-col lg:flex-row lg:items-center items-start gap-14">
-                <h1 className="text-4xl text-[#ffc300] font-bold">Jockey</h1>
+                <Link to={"/"}>
+                    <h1 className="text-4xl text-[#ffc300] font-bold">
+                        Jockey
+                    </h1>
+                </Link>
                 <div className="flex justify-between items-center gap-30">
                     <ul className="flex lg:justify-between items-center flex-col lg:flex-row gap-10 text-xl text-nowrap">
                         <li>

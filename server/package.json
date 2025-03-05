@@ -13,6 +13,7 @@
     "type": "module",
     "main": "index.js",
     "scripts": {
+        "setup": "cd ../client && npm run build",
         "test": "echo \"Error: no test specified\" && exit 1",
         "start": "node server/index.js",
         "dev": "nodemon server/index.js"

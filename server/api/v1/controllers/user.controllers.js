@@ -18,6 +18,11 @@ const zodUserSignUpSchema = zod.object({
         .min(6, "Password must be at least 6 characters long."),
 });
 
+const zodUserLogInSchema = zod.object({
+    emailOrUsername: zod.string(),
+    password: zod.string(),
+});
+
 const registerUser = asyncHandler(async (request, response) => {
     try {
         const validationResult = zodUserSignUpSchema.safeParse(request.body);
@@ -34,7 +39,7 @@ const registerUser = asyncHandler(async (request, response) => {
 
         const existingUser = await prisma.user.findFirst({
             where: {
-                OR: [{ email }, { username }],
+                OR: [{ email: email }, { username: username }],
             },
         });
 
@@ -68,8 +73,118 @@ const registerUser = asyncHandler(async (request, response) => {
             .status(201)
             .json(new ApiResponse(200, null, "User successfully registered."));
     } catch (error) {
-        throw new ApiError(500, error.message, error);
+        return response
+            .status(500)
+            .json(
+                new ApiResponse(
+                    500,
+                    { error: "server", message: error.message },
+                    error.message
+                )
+            );
     }
 });
 
-export { registerUser };
+const loginUser = asyncHandler(async (request, response) => {
+    try {
+        const validationResult = zodUserLogInSchema.safeParse(request.body);
+
+        if (!validationResult.success) {
+            throw new ApiError(
+                400,
+                validationResult.error.errors[0].message,
+                validationResult.error.errors[0]
+            );
+        }
+
+        const { emailOrUsername, password } = request.body;
+
+        const user = await prisma.user.findFirst({
+            where: {
+                OR: [{ email: emailOrUsername }, { username: emailOrUsername }],
+            },
+        });
+
+        if (!user) {
+            throw new ApiError(
+                404,
+                "No user with that email or username found."
+            );
+        }
+
+        const isPasswordValid = await bcryptjs.compare(password, user.password);
+
+        if (!isPasswordValid) {
+            throw new ApiError(401, "Invalid password.");
+        }
+
+        const accessTokenPayload = {
+            id: user.id,
+            email: user.email,
+            username: user.username,
+        };
+
+        const refreshTokenPayload = {
+            id: user.id,
+        };
+
+        const accessToken = jwt.sign(
+            accessTokenPayload,
+            process.env.ACCESS_TOKEN_SECRET,
+            { expiresIn: process.env.ACCESS_TOKEN_EXPIRATION }
+        );
+
+        const refreshToken = jwt.sign(
+            refreshTokenPayload,
+            process.env.REFRESH_TOKEN_SECRET,
+            { expiresIn: process.env.REFRESH_TOKEN_EXPIRATION }
+        );
+
+        await prisma.user.update({
+            where: {
+                id: user.id,
+            },
+            data: {
+                refreshToken: refreshToken,
+                refreshTokenExpiration: new Date(
+                    Date.now() + 7 * 24 * 60 * 60 * 1000
+                ),
+            },
+        });
+
+        return response
+            .status(200)
+            .cookie("accessToken", accessToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "strict",
+                maxAge: 60 * 60 * 1000,
+            })
+            .cookie("refreshToken", refreshToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "strict",
+                maxAge: 7 * 24 * 60 * 60 * 1000,
+            })
+            .json(
+                new ApiResponse(
+                    200,
+                    { accessToken, refreshToken },
+                    "Logged in successfully."
+                )
+            );
+    } catch (error) {
+        console.error("Log in error: ", error);
+        return response
+            .status(500)
+            .json(
+                new ApiResponse(
+                    500,
+                    { error: "server", message: error.message },
+                    error.message
+                )
+            );
+    }
+});
+
+export { registerUser, loginUser };

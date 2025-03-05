@@ -9,12 +9,14 @@ import {
     Route,
     RouterProvider,
 } from "react-router-dom";
+import LogIn from "./components/LogIn/LogIn.tsx";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
         <Route path="/" element={<Layout />}>
             <Route path="" element={<Home />} />
             <Route path="signup" element={<SignUp />} />
+            <Route path="login" element={<LogIn />} />
         </Route>
     )
 );

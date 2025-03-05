@@ -61,18 +61,21 @@ function SignUp() {
                     },
                     body: JSON.stringify(user),
                 }
-            )
-                .then((response) => response.json())
-                .then((data) => console.log(data));
+            );
 
-            console.log(response);
+            const data = await response.json();
 
-            navigate("/", { state: { replace: true } });
+            if (!response.ok) {
+                throw new Error(data.message || "Sign up failed.");
+            }
+
+            console.log(data);
+
+            navigate("/login", { replace: true });
         } catch (error: any) {
-            if (error.response?.data?.error === "email")
-                setErrors({ email: error.response.data.message });
-            else if (error.response?.data?.error === "username")
-                setErrors({ username: error.response.data.message });
+            setErrors({
+                password: error.message || "An unexpected error occured.",
+            });
         } finally {
             setIsLoading(false);
         }
