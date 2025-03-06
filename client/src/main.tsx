@@ -10,6 +10,8 @@ import {
     RouterProvider,
 } from "react-router-dom";
 import LogIn from "./components/LogIn/LogIn.tsx";
+import ForgotPassword from "./components/ForgotPassword/ForgotPassword.tsx";
+import Recovery from "./components/ForgotPassword/Recovery/Recovery.tsx";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -17,6 +19,8 @@ const router = createBrowserRouter(
             <Route path="" element={<Home />} />
             <Route path="signup" element={<SignUp />} />
             <Route path="login" element={<LogIn />} />
+            <Route path="forgot-password" element={<ForgotPassword />} />
+            <Route path="forgot-password/recovery" element={<Recovery />} />
         </Route>
     )
 );

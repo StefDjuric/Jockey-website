@@ -4,10 +4,12 @@ import { ApiResponse } from "../utils/apiResponse.js";
 import { PrismaClient } from "@prisma/client";
 import jwt from "jsonwebtoken";
 import bcryptjs from "bcryptjs";
+import { sendEmail } from "../utils/mailer.js";
 
 import zod from "zod";
 
 const prisma = new PrismaClient();
+
 const zodUserSignUpSchema = zod.object({
     username: zod
         .string()
@@ -187,4 +189,123 @@ const loginUser = asyncHandler(async (request, response) => {
     }
 });
 
-export { registerUser, loginUser };
+const sendMailToResetPassword = asyncHandler(async (request, response) => {
+    const zodEmailSchema = zod.object({
+        email: zod.string().email("Invalid email address."),
+    });
+    try {
+        const validationResult = zodEmailSchema.safeParse(request.body);
+
+        if (!validationResult.success) {
+            throw new ApiError(
+                400,
+                validationResult.error.errors[0].message,
+                validationResult.error.errors[0]
+            );
+        }
+
+        const { email } = request.body;
+
+        const user = await prisma.user.findFirst({
+            where: {
+                email: email,
+            },
+        });
+
+        if (!user) {
+            throw new ApiError(400, "Could not find user with this email.");
+        }
+
+        await sendEmail({ email: email, userId: user.id });
+
+        return response
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    { success: true },
+                    `Mail sent successfully to ${email}.`
+                )
+            );
+    } catch (error) {
+        return response
+            .status(500)
+            .json(new ApiResponse(500, "", error.message));
+    }
+});
+
+const recoverPassword = asyncHandler(async (request, response) => {
+    const zodRecoverySchema = zod
+        .object({
+            password: zod
+                .string()
+                .min(6, "Password must be at least 6 characters long."),
+            repeatPassword: zod.string(),
+            token: zod.string(),
+        })
+        .refine((data) => data.password === data.repeatPassword, {
+            message: "Passwords do not match.",
+            path: ["repeatPassword"],
+        });
+
+    try {
+        const validationResult = zodRecoverySchema.safeParse(request.body);
+
+        if (!validationResult.success) {
+            throw new ApiError(
+                400,
+                validationResult.error.errors[0].message,
+                validationResult.error.errors[0]
+            );
+        }
+
+        const { password, token } = request.body;
+
+        const user = await prisma.user.findFirst({
+            where: {
+                forgotPasswordToken: token,
+                forgotPasswordTokenExpiration: {
+                    gt: new Date(Date.now()),
+                },
+            },
+        });
+
+        if (!user) {
+            throw new ApiError(
+                401,
+                "Forgot password token expired. Please go to forgot password and enter your email again."
+            );
+        }
+
+        const salt = await bcryptjs.genSalt(10);
+        const hashedPassword = await bcryptjs.hash(password, salt);
+
+        await prisma.user.update({
+            where: {
+                id: user.id,
+            },
+            data: {
+                password: hashedPassword,
+                forgotPasswordToken: null,
+                forgotPasswordTokenExpiration: null,
+            },
+        });
+
+        return response
+            .status(201)
+            .json(
+                new ApiResponse(
+                    201,
+                    { success: true },
+                    "Successfully updated password."
+                )
+            );
+    } catch (error) {
+        console.error("Failed to recover password: ", error.message);
+        return response
+            .status(500)
+            .json(new ApiResponse(500, error, error.message));
+    }
+});
+
+export { registerUser, loginUser, sendMailToResetPassword, recoverPassword };

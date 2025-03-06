@@ -2,6 +2,7 @@ import Button from "../Button/Button";
 import Hamburger from "../../assets/menu.svg";
 import XMark from "../../assets/xmark-solid.svg";
 import { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 
 function Navbar(): React.ReactElement {
     const [isHamburgerOpen, setisHamburgerOpen] = useState<boolean>(false);
@@ -27,28 +28,28 @@ function Navbar(): React.ReactElement {
 
     return (
         <nav className="flex justify-between items-center mx-auto max-w-[1440px] px-6 lg:px-20 3xl:px-0 relative z-30 py-5 poppins-regular">
-            <a
+            <Link
                 className="font-bold text-4xl text-[#ffc300] poppins-bold"
-                href="/"
+                to="/"
             >
                 Jockey
-            </a>
+            </Link>
             <div className="hidden lg:flex lg:justify-between lg:items-center lg:gap-8">
-                <a href="/signup">
+                <Link to="/signup">
                     <Button
                         type="button"
                         label="Sign Up"
                         styling="rounded-xl text-lg px-4 py-2 bg-[#ffc300] text-white hover:cursor-pointer hover:bg-[#aa8304]"
                     />
-                </a>
+                </Link>
 
-                <a href="/login">
+                <Link to="/login">
                     <Button
                         type="button"
                         label="Log In"
                         styling="rounded-xl text-lg px-4 py-2 bg-[#003566] text-white hover:cursor-pointer hover:bg-[#192a39]"
                     />
-                </a>
+                </Link>
             </div>
 
             {/* Hamburger menu */}
@@ -66,9 +67,28 @@ function Navbar(): React.ReactElement {
                         height={28}
                     />
                     <ul
-                        className={`flex fixed top-16  gap-8 ${isHamburgerOpen ? "translate-x-0" : "translate-x-full"} right-0 min-h-screen gap-8 w-[250px] z-50 bg-white shadow-xl flex-col items-start font-[18px] text-gray-400  pb-1.5 transition-all ease-in-out duration-300`}
+                        className={`flex flex-col fixed top-16  gap-8 ${
+                            isHamburgerOpen
+                                ? "translate-x-0"
+                                : "translate-x-full"
+                        } right-0 min-h-screen w-[250px] z-50 bg-white shadow-2xl  items-center text-lg text-[#003566]  pb-1.5 transition-all ease-in-out duration-300`}
                     >
-                        TODO: Navlinks here
+                        <li className="mt-20">
+                            <Link
+                                to={"/about"}
+                                className="hover:text-[#ffc300]"
+                            >
+                                About us
+                            </Link>
+                        </li>
+                        <li>
+                            <Link
+                                to={"/contact"}
+                                className="hover:text-[#ffc300]"
+                            >
+                                Contact us
+                            </Link>
+                        </li>
                     </ul>
                 </div>
             </div>
