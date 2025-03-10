@@ -58,8 +58,8 @@ const registerUser = asyncHandler(async (request, response) => {
 
         const createdUser = await prisma.user.create({
             data: {
-                username: username,
-                email: email,
+                username: username.trim(),
+                email: email.trim().toLowerCase(),
                 password: hashedPassword,
             },
         });
@@ -308,4 +308,50 @@ const recoverPassword = asyncHandler(async (request, response) => {
     }
 });
 
-export { registerUser, loginUser, sendMailToResetPassword, recoverPassword };
+const logOut = asyncHandler(async (request, response) => {
+    try {
+        const user = await prisma.user.update({
+            where: {
+                id: request.user.id,
+            },
+            data: {
+                refreshToken: null,
+                refreshTokenExpiration: null,
+            },
+        });
+
+        if (!user) {
+            throw new ApiError(404, "Could not update user tokens.");
+        }
+
+        const options = {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+        };
+
+        return response
+            .status(200)
+            .clearCookie("accessToken", options)
+            .clearCookie("refreshToken", options)
+            .json(
+                new ApiResponse(
+                    200,
+                    { success: true },
+                    "Successfully logged out."
+                )
+            );
+    } catch (error) {
+        console.error("Failed to log out. ", error?.message);
+        return response
+            .status(500)
+            .json(new ApiResponse(500, { success: false }, error.message));
+    }
+});
+
+export {
+    registerUser,
+    loginUser,
+    sendMailToResetPassword,
+    recoverPassword,
+    logOut,
+};

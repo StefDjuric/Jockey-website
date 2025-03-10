@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import Button from "../Button/Button";
 import { FormEvent, useState } from "react";
+import { useAuth } from "../Providers/AuthContextProvider";
 
 function LogIn() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -9,6 +10,7 @@ function LogIn() {
         emailOrUsername: "",
         password: "",
     });
+    const { setIsLoggedIn } = useAuth();
     const navigate = useNavigate();
 
     const handleLogIn = async (event: FormEvent) => {
@@ -37,8 +39,10 @@ function LogIn() {
                 throw new Error(data.message || "Log in failed");
             }
 
+            setIsLoggedIn(true);
+
             console.log(data);
-            navigate("/", { replace: true });
+            navigate("/dashboard", { replace: true });
         } catch (error: any) {
             setErrors({
                 password: error.message || "An unexpected error occured.",

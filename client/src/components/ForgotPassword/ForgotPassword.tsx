@@ -77,7 +77,7 @@ function page() {
                         <div className="flex flex-col justify-center items-center mb-5">
                             <p className="text-lg">
                                 Forgot your accounts password? Enter your email
-                                address and we'll send you a recovery code.
+                                address and we'll send you a recovery mail.
                             </p>
                         </div>
                         <form
