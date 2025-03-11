@@ -41,7 +41,6 @@ function LogIn() {
 
             setIsLoggedIn(true);
 
-            console.log(data);
             navigate("/dashboard", { replace: true });
         } catch (error: any) {
             setErrors({

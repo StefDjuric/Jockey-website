@@ -5,6 +5,7 @@ import { PrismaClient } from "@prisma/client";
 import jwt from "jsonwebtoken";
 import bcryptjs from "bcryptjs";
 import { sendEmail } from "../utils/mailer.js";
+import { uploadToCloudinary } from "../utils/uploadToCloudinary.js";
 
 import zod from "zod";
 
@@ -348,10 +349,101 @@ const logOut = asyncHandler(async (request, response) => {
     }
 });
 
+const uploadImage = asyncHandler(async (request, response) => {
+    try {
+        if (!request.file) {
+            throw new ApiError(400, "No file uploaded");
+        }
+
+        const cloudinaryResult = await uploadToCloudinary(request.file.path);
+
+        if (!cloudinaryResult) {
+            throw new ApiError(500, "Failed to upload to cloudinary.");
+        }
+
+        return response.status(200).json(
+            new ApiResponse(
+                200,
+                {
+                    success: true,
+                    file: {
+                        url: cloudinaryResult.url,
+                        publicId: cloudinaryResult.public_id,
+                    },
+                },
+                "Successfully uploaded image"
+            )
+        );
+    } catch (error) {
+        console.error("Failed to upload to cloudinary. ", error.message);
+        return response
+            .status(500)
+            .json(new ApiResponse(500, { success: false }, error.message));
+    }
+});
+
+const createPlaylist = asyncHandler(async (request, response) => {
+    try {
+        const { playlistType, playlistDescription, playlistName, coverImage } =
+            request.body;
+
+        const isPublic = playlistType.toLowerCase() === "public" ? true : false;
+
+        if (!playlistName) {
+            throw new ApiError(400, "Playlist name is required.");
+        }
+
+        const user = await prisma.user.findFirst({
+            where: {
+                id: request?.user?.id,
+            },
+        });
+
+        if (!user) {
+            throw new ApiError(404, "Could not find user with the token id.");
+        }
+
+        const playlist = await prisma.playlist.create({
+            data: {
+                name: playlistName,
+                description: playlistDescription,
+                isPublic: isPublic,
+                coverImage: coverImage,
+
+                creator: {
+                    connect: {
+                        id: user.id,
+                    },
+                },
+            },
+        });
+
+        if (!playlist) {
+            throw new ApiError(500, "Could not create playlist.");
+        }
+
+        return response
+            .status(201)
+            .json(
+                new ApiResponse(
+                    201,
+                    { success: true },
+                    "Successfully created a playlist."
+                )
+            );
+    } catch (error) {
+        return response
+            .status(500)
+            .json(new ApiResponse(500, { success: false }, error?.message));
+    }
+});
+
 export {
     registerUser,
     loginUser,
     sendMailToResetPassword,
     recoverPassword,
     logOut,
+    createPlaylist,
+    uploadImage,
 };
