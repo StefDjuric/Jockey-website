@@ -438,6 +438,41 @@ const createPlaylist = asyncHandler(async (request, response) => {
     }
 });
 
+const checkAuthentication = asyncHandler(async (request, response) => {
+    try {
+        const token =
+            request.cookies?.accessToken ||
+            request.header("Authorization")?.replace("Bearer", "");
+
+        if (!token) {
+            return response
+                .status(200)
+                .json(
+                    new ApiResponse(
+                        200,
+                        { isLoggedIn: false },
+                        "Not logged in."
+                    )
+                );
+        }
+
+        return response
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    { isLoggedIn: true },
+                    "Access token found. Logged in."
+                )
+            );
+    } catch (error) {
+        console.error(error.message);
+        return response
+            .status(500)
+            .json(new ApiResponse(500, { isLoggedIn: false }, error.message));
+    }
+});
+
 export {
     registerUser,
     loginUser,
@@ -446,4 +481,5 @@ export {
     logOut,
     createPlaylist,
     uploadImage,
+    checkAuthentication,
 };

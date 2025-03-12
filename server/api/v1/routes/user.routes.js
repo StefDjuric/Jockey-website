@@ -7,6 +7,7 @@ import {
     logOut,
     createPlaylist,
     uploadImage,
+    checkAuthentication,
 } from "../controllers/user.controllers.js";
 import { verifyJWT } from "../middleware/auth.middleware.js";
 import { upload } from "../middleware/multer.middleware.js";
@@ -22,5 +23,6 @@ router.route("/create-playlist").post(verifyJWT, createPlaylist);
 router
     .route("/upload-image")
     .post(verifyJWT, upload.single("file"), uploadImage);
+router.route("/check-auth").get(checkAuthentication);
 
 export default router;

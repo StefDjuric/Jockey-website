@@ -56,6 +56,28 @@ function Navbar(): React.ReactElement {
         }
     };
 
+    useEffect(() => {
+        async function checkAuth() {
+            try {
+                const response = await fetch(
+                    "http://localhost:3000/api/v1/users/check-auth"
+                );
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    setIsLoggedIn(false);
+                }
+
+                setIsLoggedIn(data?.data?.isLoggedIn);
+            } catch (error: any) {
+                setIsLoggedIn(false);
+            }
+        }
+
+        checkAuth();
+    }, []);
+
     return (
         <nav className="flex justify-between items-center mx-auto max-w-[1440px] px-6 lg:px-20 3xl:px-0 relative z-30 py-5 poppins-regular">
             <Link
