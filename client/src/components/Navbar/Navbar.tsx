@@ -60,7 +60,11 @@ function Navbar(): React.ReactElement {
         async function checkAuth() {
             try {
                 const response = await fetch(
-                    "http://localhost:3000/api/v1/users/check-auth"
+                    "http://localhost:3000/api/v1/users/check-auth",
+                    {
+                        method: "GET",
+                        credentials: "include",
+                    }
                 );
 
                 const data = await response.json();

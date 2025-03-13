@@ -91,7 +91,7 @@ function page() {
                         )}
                     </div>
                     <div className="flex flex-col gap-2">
-                        <label htmlFor="password" className="text-md">
+                        <label htmlFor="repeatPassword" className="text-md">
                             Confirm password
                         </label>
                         <input

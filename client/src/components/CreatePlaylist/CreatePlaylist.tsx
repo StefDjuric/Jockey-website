@@ -179,6 +179,7 @@ function CreatePlaylist() {
                     <input
                         type="text"
                         name="playlist-title"
+                        id="playlist-title"
                         value={formData.playlistName}
                         onChange={(event) =>
                             setFormData({
@@ -203,6 +204,7 @@ function CreatePlaylist() {
                     </label>
                     <textarea
                         name="playlist-description"
+                        id="playlist-description"
                         rows={4}
                         value={formData.playlistDescription}
                         onChange={(event) =>
@@ -224,6 +226,7 @@ function CreatePlaylist() {
                             type="radio"
                             name="public-playlist"
                             value={"public"}
+                            id="public-playlist"
                             onChange={(event) =>
                                 setFormData({
                                     ...formData,
@@ -240,6 +243,7 @@ function CreatePlaylist() {
                         <input
                             type="radio"
                             name="public-playlist"
+                            id="public-playlist"
                             value={"private"}
                             onChange={(event) =>
                                 setFormData({

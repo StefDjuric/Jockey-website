@@ -16,18 +16,24 @@ import Dashboard from "./components/Dashboard/Dashboard.tsx";
 import CreatePlaylist from "./components/CreatePlaylist/CreatePlaylist.tsx";
 import Playlists from "./components/Playlists/Playlists.tsx";
 import { AuthProvider } from "./components/Providers/AuthContextProvider.tsx";
+import ProtectedRoutes from "./components/ProtectedRoutes/ProtectedRoutes.tsx";
+import PublicRoutes from "./components/PublicRoutes/PublicRoutes.tsx";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
         <Route path="/" element={<Layout />}>
-            <Route path="" element={<Home />} />
-            <Route path="signup" element={<SignUp />} />
-            <Route path="login" element={<LogIn />} />
-            <Route path="forgot-password" element={<ForgotPassword />} />
-            <Route path="forgot-password/recovery" element={<Recovery />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="playlists" element={<Playlists />} />
-            <Route path="playlists/create" element={<CreatePlaylist />} />
+            <Route element={<PublicRoutes />}>
+                <Route path="" element={<Home />} />
+                <Route path="signup" element={<SignUp />} />
+                <Route path="login" element={<LogIn />} />
+                <Route path="forgot-password" element={<ForgotPassword />} />
+                <Route path="forgot-password/recovery" element={<Recovery />} />
+            </Route>
+            <Route element={<ProtectedRoutes />}>
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="playlists" element={<Playlists />} />
+                <Route path="playlists/create" element={<CreatePlaylist />} />
+            </Route>
         </Route>
     )
 );
