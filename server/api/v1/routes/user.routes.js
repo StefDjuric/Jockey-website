@@ -5,7 +5,6 @@ import {
     sendMailToResetPassword,
     recoverPassword,
     logOut,
-    createPlaylist,
     uploadImage,
     checkAuthentication,
 } from "../controllers/user.controllers.js";
@@ -19,7 +18,6 @@ router.route("/login").post(loginUser);
 router.route("/forgot-password").post(sendMailToResetPassword);
 router.route("/recovery").post(recoverPassword);
 router.route("/logout").post(verifyJWT, logOut);
-router.route("/create-playlist").post(verifyJWT, createPlaylist);
 router
     .route("/upload-image")
     .post(verifyJWT, upload.single("file"), uploadImage);

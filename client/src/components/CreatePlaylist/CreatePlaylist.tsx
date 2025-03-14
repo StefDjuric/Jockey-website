@@ -89,7 +89,7 @@ function CreatePlaylist() {
 
         try {
             const response = await fetch(
-                "http://localhost:3000/api/v1/users/create-playlist",
+                "http://localhost:3000/api/v1/playlists/create-playlist",
                 {
                     method: "POST",
                     credentials: "include",

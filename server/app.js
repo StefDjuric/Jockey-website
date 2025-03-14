@@ -27,12 +27,14 @@ app.use(express.static(path.join(__dirname, "../client/dist")));
 // import routes
 import healthCheckRouter from "./api/v1/routes/healthcheck.routes.js";
 import userRoutes from "./api/v1/routes/user.routes.js";
+import playlistRoutes from "./api/v1/routes/playlist.routes.js";
 
 app.use(errorHandler);
 
 // routes
 app.use("/api/v1/healthcheck", healthCheckRouter);
 app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/playlists", playlistRoutes);
 
 // render react
 app.get("*", (req, res) => {

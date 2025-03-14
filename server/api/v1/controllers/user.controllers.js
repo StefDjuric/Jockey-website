@@ -382,62 +382,6 @@ const uploadImage = asyncHandler(async (request, response) => {
     }
 });
 
-const createPlaylist = asyncHandler(async (request, response) => {
-    try {
-        const { playlistType, playlistDescription, playlistName, coverImage } =
-            request.body;
-
-        const isPublic = playlistType.toLowerCase() === "public" ? true : false;
-
-        if (!playlistName) {
-            throw new ApiError(400, "Playlist name is required.");
-        }
-
-        const user = await prisma.user.findFirst({
-            where: {
-                id: request?.user?.id,
-            },
-        });
-
-        if (!user) {
-            throw new ApiError(404, "Could not find user with the token id.");
-        }
-
-        const playlist = await prisma.playlist.create({
-            data: {
-                name: playlistName,
-                description: playlistDescription,
-                isPublic: isPublic,
-                coverImage: coverImage,
-
-                creator: {
-                    connect: {
-                        id: user.id,
-                    },
-                },
-            },
-        });
-
-        if (!playlist) {
-            throw new ApiError(500, "Could not create playlist.");
-        }
-
-        return response
-            .status(201)
-            .json(
-                new ApiResponse(
-                    201,
-                    { success: true },
-                    "Successfully created a playlist."
-                )
-            );
-    } catch (error) {
-        return response
-            .status(500)
-            .json(new ApiResponse(500, { success: false }, error?.message));
-    }
-});
-
 const checkAuthentication = asyncHandler(async (request, response) => {
     try {
         const token =
@@ -479,7 +423,6 @@ export {
     sendMailToResetPassword,
     recoverPassword,
     logOut,
-    createPlaylist,
     uploadImage,
     checkAuthentication,
 };
