@@ -70,8 +70,6 @@ function Dashboard() {
 
                 const data = await response.json();
 
-                console.log(data);
-
                 if (!response.ok) {
                     throw new Error(
                         data?.message || "Failed to fetch trending playlists."
@@ -161,7 +159,7 @@ function Dashboard() {
 
             <div className="flex flex-col gap-2 mt-10">
                 <h4 className="text-xl text-[#003566]">
-                    Trending playlists right now
+                    Trending public playlists right now
                 </h4>
                 {isLoading ? (
                     <div className="flex justify-center items-center">

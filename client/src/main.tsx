@@ -18,6 +18,7 @@ import Playlists from "./components/Playlists/Playlists.tsx";
 import { AuthProvider } from "./components/Providers/AuthContextProvider.tsx";
 import ProtectedRoutes from "./components/ProtectedRoutes/ProtectedRoutes.tsx";
 import PublicRoutes from "./components/PublicRoutes/PublicRoutes.tsx";
+import Playlist from "./components/Playlist/Playlist.tsx";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -32,6 +33,8 @@ const router = createBrowserRouter(
             <Route element={<ProtectedRoutes />}>
                 <Route path="dashboard" element={<Dashboard />} />
                 <Route path="playlists" element={<Playlists />} />
+                <Route path="playlists/:title/:id" element={<Playlist />} />
+
                 <Route path="playlists/create" element={<CreatePlaylist />} />
             </Route>
         </Route>

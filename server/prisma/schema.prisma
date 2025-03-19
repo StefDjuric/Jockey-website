@@ -89,36 +89,26 @@ model PlaylistMember {
   @@map("playlist_members")
 }
 
-model Song {
-  id          Int       @id @default(autoincrement())
-  title       String
-  artist      String
-  album       String?
-  duration    Int?
-  releaseDate DateTime?
-  albumArtURL String?
-  previewURL  String?
-  spotifyId   String?   @unique
-  youtubeId   String?   @unique
-  createdAt   DateTime  @default(now())
-
-  playlistSongs PlaylistSong[]
-
-  @@map("songs")
-}
-
 model PlaylistSong {
   id           Int       @id @default(autoincrement())
   playlistId   Int
-  songId       Int
   addedById    Int
   addedAt      DateTime  @default(now())
+  title        String
+  artist       String
+  album        String?
+  duration     Int?
+  releaseDate  DateTime?
+  albumArtURL  String?
+  previewURL   String?
+  spotifyId    String?   @unique
+  youtubeId    String?   @unique
+  createdAt    DateTime  @default(now())
   position     Int
   isPlayed     Boolean   @default(false)
   lastPlayedAt DateTime?
 
   playlist Playlist   @relation(fields: [playlistId], references: [id], onDelete: Cascade)
-  song     Song       @relation(fields: [songId], references: [id], onDelete: Cascade)
   addedBy  User       @relation("SongAdder", fields: [addedById], references: [id], onDelete: Cascade)
   votes    SongVote[]
 

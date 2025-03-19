@@ -28,6 +28,7 @@ app.use(express.static(path.join(__dirname, "../client/dist")));
 import healthCheckRouter from "./api/v1/routes/healthcheck.routes.js";
 import userRoutes from "./api/v1/routes/user.routes.js";
 import playlistRoutes from "./api/v1/routes/playlist.routes.js";
+import youtubeRoutes from "./api/v1/routes/youtube.routes.js";
 
 app.use(errorHandler);
 
@@ -35,6 +36,7 @@ app.use(errorHandler);
 app.use("/api/v1/healthcheck", healthCheckRouter);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/playlists", playlistRoutes);
+app.use("/api/v1/youtube", youtubeRoutes);
 
 // render react
 app.get("*", (req, res) => {
