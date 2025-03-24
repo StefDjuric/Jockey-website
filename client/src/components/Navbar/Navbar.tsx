@@ -90,12 +90,34 @@ function Navbar(): React.ReactElement {
             >
                 Jockey
             </Link>
+
+            <div
+                className={`hidden lg:flex lg:justify-center lg:items-center gap-8 w-full
+                 `}
+            >
+                {isLoggedIn ? (
+                    <ul className="hidden lg:flex lg:justify-center lg:items-center gap-12 w-full">
+                        {PRIVATE_NAV_LINKS.map((link) => (
+                            <li key={link.key}>
+                                <Link
+                                    to={link.href}
+                                    className="hover:text-[#ffc300] text-lg"
+                                >
+                                    {link.label}
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    ""
+                )}
+            </div>
             <div className="hidden lg:flex lg:justify-between lg:items-center lg:gap-8">
                 {isLoggedIn ? (
                     <Button
                         label="Log Out"
                         type="button"
-                        styling="rounded-xl text-lg px-4 py-2 bg-[#ffc300] text-white hover:cursor-pointer hover:bg-[#aa8304]"
+                        styling="rounded-xl text-lg px-4 py-2 bg-[#ffc300] text-white hover:cursor-pointer hover:bg-[#aa8304] text-nowrap"
                         onClick={handleLogOut}
                     />
                 ) : (

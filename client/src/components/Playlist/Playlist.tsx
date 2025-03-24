@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import circleImage from "../../assets/circle-solid.svg";
 import likedHeartImage from "../../assets/heart-solid.svg";
 import Button from "../Button/Button";
-import playButton from "../../assets/play-solid.svg";
+import playIcon from "../../assets/play-solid.svg";
 import unlikedHeartImage from "../../assets/heart-regular.svg";
 import plusIcon from "../../assets/plus-solid.svg";
 import searchIcon from "../../assets/magnifying-glass-solid.svg";
+import pauseIcon from "../../assets/pause-solid.svg";
 
 declare global {
     interface Window {
@@ -69,6 +70,7 @@ function Playlist() {
     const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(
         null
     );
+    const [currentSongIdx, setCurrentSongIdx] = useState(-1);
     const [searchQuery, setSearchQuery] = useState<string>("");
     const [searchResults, setSearchResults] = useState<YoutubeSearchResults[]>(
         []
@@ -76,19 +78,42 @@ function Playlist() {
     const [isSearching, setIsSearching] = useState<boolean>(false);
     const [showPlayer, setShowPlayer] = useState<boolean>(false);
     const playerRef = useRef<any>(null);
-    const playerContainerRef = useRef<HTMLDivElement>(null);
+    const [ytApiReady, setYtApiReady] = useState<boolean>(false);
+    const playerContainerId = "youtube-player-container";
+    const [playButtonIcon, setPlayButtonIcon] = useState(playIcon);
+    const currentSongIdxRef = useRef(currentSongIdx);
+    const currentVideoIdRef = useRef<string | null>(null);
 
-    //Load youtube API
+    // const togglePlayIcon = () => {
+    //     if (playButtonIcon === playIcon) {
+    //         setPlayButtonIcon(pauseIcon);
+    //     } else {
+    //         setPlayButtonIcon(playIcon);
+    //     }
+    // };
+
     useEffect(() => {
-        const tag = document.createElement("script");
-        tag.src = "https://www.youtube.com/iframe_api";
-        const firstScriptTag = document.getElementsByTagName("script")[0];
+        currentSongIdxRef.current = currentSongIdx;
+    }, [currentSongIdx]);
 
-        firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+    // Load youtube API
+    useEffect(() => {
+        if (!window.YT) {
+            const tag = document.createElement("script");
+            tag.src = "https://www.youtube.com/iframe_api";
+            const firstScriptTag = document.getElementsByTagName("script")[0];
+
+            firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+        }
 
         window.onYouTubeIframeAPIReady = () => {
             // Player will be initialized when a song is played
+            setYtApiReady(true);
         };
+
+        if (window.YT && window.YT.Player) {
+            setYtApiReady(true);
+        }
 
         return () => {
             if (playerRef.current) {
@@ -138,23 +163,50 @@ function Playlist() {
 
             const data = await response.json();
 
-            console.log("Get Playlist songs API response: ", data);
-            console.log("Playlist data:", data?.data?.playlist);
-            console.log("Songs data:", data?.data?.playlist?.songs);
-
             if (!response.ok) {
                 throw new Error(
                     data?.message || "Failed to fetch playlist songs."
                 );
             }
 
+            if (data?.data?.playlist?.songs) {
+                data.data.playlist.songs.sort(
+                    (a: PlaylistSong, b: PlaylistSong) =>
+                        a.position - b.position
+                );
+            }
+
             setPlaylist(data?.data?.playlist);
             setPlaylistUsername(data?.data?.username);
+
+            if (currentlyPlaying && data?.data?.playlist?.songs) {
+                const idx = data.data.playlist.songs.findIndex(
+                    (song: PlaylistSong) => song.youtubeId === currentlyPlaying
+                );
+                if (idx !== -1) {
+                    setCurrentSongIdx(idx);
+                }
+            }
         } catch (error: any) {
             console.error(error?.message);
             setErrors({ general: error?.message });
         }
     }
+
+    useEffect(() => {
+        if (currentlyPlaying && playlist?.songs) {
+            const newIdx = playlist.songs.findIndex(
+                (song) => song.youtubeId === currentlyPlaying
+            );
+            if (newIdx !== -1) {
+                setCurrentSongIdx(newIdx);
+            } else {
+                console.warn(
+                    `Could not find index for currently playing song: ${currentlyPlaying}`
+                );
+            }
+        }
+    }, [currentlyPlaying, playlist]);
 
     // Get playlist with the id
     useEffect(() => {
@@ -166,38 +218,96 @@ function Playlist() {
     };
 
     const initPlayer = (videoId: string) => {
-        if (window.YT && window.YT.Player) {
-            if (playerRef.current) {
-                playerRef.current.destroy();
-            }
+        if (!ytApiReady) {
+            console.warn("Youtube API not yet ready.");
+            return;
         }
 
-        playerRef.current = new window.YT.Player(playerContainerRef.current, {
-            height: "240",
-            width: "100%",
-            videoId: videoId,
-            playerVars: {
-                playsinline: 1,
-                controls: 1,
-                autoplay: 1,
-            },
-            events: {
-                onStateChange: onPlayerStateChange,
-            },
-        });
+        try {
+            const container = document.getElementById(playerContainerId);
 
-        setShowPlayer(true);
-        setCurrentlyPlaying(videoId);
+            if (!container) {
+                console.error(
+                    `Element with ID ${playerContainerId} not found.`
+                );
+                return;
+            }
+
+            if (playerRef.current) {
+                try {
+                    playerRef.current.loadVideoById(videoId);
+                    currentVideoIdRef.current = videoId;
+                    setCurrentlyPlaying(videoId);
+                    return;
+                } catch (error) {
+                    console.error("Error loading video: ", error);
+                }
+            }
+
+            container.innerHTML = "";
+
+            const playerDiv = document.createElement("div");
+            const uniquePlayerId = `youtube-player-${Date.now()}`;
+            playerDiv.id = uniquePlayerId;
+            container.appendChild(playerDiv);
+
+            playerRef.current = new window.YT.Player(playerDiv.id, {
+                height: "240",
+                width: "100%",
+                videoId: videoId,
+                playerVars: {
+                    playsinline: 1,
+                    controls: 1,
+                    autoplay: 1,
+                    origin: window.location.origin,
+                },
+                events: {
+                    onReady: () => {
+                        currentVideoIdRef.current = videoId;
+                        setCurrentlyPlaying(videoId);
+                    },
+                    onStateChange: onPlayerStateChange,
+                    onError: (event: any) =>
+                        console.error("Player error:", event.data),
+                },
+            });
+
+            setShowPlayer(true);
+        } catch (error) {
+            console.error("Error while initializing player: ", error);
+        }
     };
 
     const onPlayerStateChange = (event: any) => {
+        const eventVideoId = playerRef.current?.getVideoData()?.video_id;
+
+        // Ignore events from previous players
+        if (eventVideoId !== currentVideoIdRef.current) {
+            return;
+        }
+
         if (event.data === window.YT.PlayerState.ENDED) {
             playNextSong();
+        } else if (event.data === window.YT.PlayerState.PLAYING) {
+            setPlayButtonIcon(pauseIcon);
+        } else if (event.data === window.YT.PlayerState.PAUSED) {
+            setPlayButtonIcon(playIcon);
         }
     };
 
-    const playSong = (youtubeId: string) => {
+    const playSong = (youtubeId: string, songIdx?: number) => {
         if (!youtubeId) return;
+
+        const idxToUse =
+            songIdx !== undefined
+                ? songIdx
+                : playlist?.songs?.findIndex(
+                      (song) => song.youtubeId === youtubeId
+                  ) ?? -1;
+
+        if (idxToUse !== -1) {
+            setCurrentSongIdx(idxToUse);
+        }
 
         if (playerRef.current && currentlyPlaying === youtubeId) {
             // if the same song is clicked again, just play/pause
@@ -211,7 +321,9 @@ function Playlist() {
             }
         } else {
             // Play new song
+            currentVideoIdRef.current = youtubeId;
             initPlayer(youtubeId);
+            setCurrentlyPlaying(youtubeId);
 
             if (playlist?.songs) {
                 const updatedSongs = playlist.songs.map((song) => {
@@ -232,17 +344,28 @@ function Playlist() {
     };
 
     const playNextSong = () => {
-        if (!playlist?.songs || playlist.songs.length === 0) return;
+        if (!playlist?.songs || playlist.songs.length === 0) {
+            return;
+        }
 
-        const currentIdx = playlist.songs.findIndex(
-            (song) => song.youtubeId === currentlyPlaying
-        );
+        const currentIdx = currentSongIdxRef.current;
 
         if (currentIdx >= 0 && currentIdx < playlist.songs.length - 1) {
-            const nextSong = playlist.songs[currentIdx + 1];
+            const nextIdx = currentIdx + 1;
+            const nextSong = playlist.songs[nextIdx];
 
             if (nextSong.youtubeId) {
-                playSong(nextSong.youtubeId);
+                playSong(nextSong.youtubeId, nextIdx);
+            } else {
+                console.warn("Next song doesnt have youtube id.");
+            }
+        } else if (currentIdx === playlist.songs.length - 1) {
+            if (playlist.songs[0]?.youtubeId) {
+                playSong(playlist.songs[0].youtubeId, 0);
+            }
+        } else {
+            if (playlist.songs[0]?.youtubeId) {
+                playSong(playlist.songs[0].youtubeId, 0);
             }
         }
     };
@@ -302,7 +425,6 @@ function Playlist() {
             if (!response.ok) {
                 throw new Error(data?.message || "Failed to search for songs.");
             } else if (response.ok) {
-                console.log("Raw search results: ", data?.data?.items);
                 setSearchResults(data?.data?.items);
             }
         } catch (error: any) {
@@ -345,6 +467,12 @@ function Playlist() {
             }
 
             if (data?.data?.updatedPlaylist) {
+                if (data.data.updatedPlaylist?.songs) {
+                    data.data.updatedPlaylist.songs.sort(
+                        (a: PlaylistSong, b: PlaylistSong) =>
+                            a.position - b.position
+                    );
+                }
                 setPlaylist(data.data.updatedPlaylist);
             } else {
                 getPlaylistSongs();
@@ -442,48 +570,66 @@ function Playlist() {
                                 <img
                                     src={likedHeartImage}
                                     alt="heart"
-                                    width={20}
-                                    height={20}
+                                    width={25}
+                                    height={25}
                                 />
                             </div>
                         </div>
                     </div>
                 </div>
-
                 <div className="h-0.5 bg-[#ffc300]"></div>
-
                 {/* Youtube player */}
-                {showPlayer && (
-                    <div className="w-full bg-gray-100 rounded-lg overflow-hidden">
-                        <div
-                            ref={playerContainerRef}
-                            id="youtube-player"
-                            className="w-full h-64"
-                        ></div>
-                    </div>
-                )}
-
+                <div
+                    className={`w-full bg-gray-100 rounded-lg overflow-hidden ${
+                        showPlayer ? "bg-gray-100" : ""
+                    }`}
+                    id={playerContainerId}
+                    style={{ height: showPlayer ? "240px" : "0px" }}
+                ></div>
                 {/* Controls section */}
                 <div className="flex justify-between items-center">
                     <div className="flex justify-between gap-3">
                         {playlist?.songs && playlist.songs.length > 0 && (
                             <Button
                                 type="button"
-                                icon={playButton}
+                                icon={playButtonIcon}
                                 onClick={() => {
-                                    if (playlist.songs[0].youtubeId) {
-                                        playSong(playlist.songs[0].youtubeId);
+                                    if (currentlyPlaying && playerRef.current) {
+                                        const state =
+                                            playerRef.current.getPlayerState();
+
+                                        if (state === 1) {
+                                            playerRef.current.pauseVideo();
+                                            setPlayButtonIcon(playIcon);
+                                        } else {
+                                            playerRef.current.playVideo();
+                                            setPlayButtonIcon(pauseIcon);
+                                        }
+                                    } else if (playlist.songs[0].youtubeId) {
+                                        playSong(
+                                            playlist.songs[0].youtubeId,
+                                            0
+                                        );
+                                        setPlayButtonIcon(pauseIcon);
                                     }
                                 }}
                                 styling="rounded-full flex items-center justify-center w-15 h-15 lg:w-20 lg:h-20 bg-[#ffc300] hover:bg-[#aa8304] hover:cursor-pointer"
                             />
                         )}
-                        <Button
-                            icon={liked ? likedHeartImage : unlikedHeartImage}
-                            styling="w-15 h-15 hover:cursor-pointer"
+                        <button
+                            className="hover:cursor-pointer flex justify-center items-center"
                             type="button"
                             onClick={handleLike}
-                        />
+                        >
+                            <img
+                                src={
+                                    liked ? likedHeartImage : unlikedHeartImage
+                                }
+                                alt="heart image"
+                                width={40}
+                                height={40}
+                            />
+                        </button>
                     </div>
 
                     <input
@@ -494,7 +640,6 @@ function Playlist() {
                         className="px-4 py-2 border-2 border-solid border-[#003566] rounded-lg"
                     />
                 </div>
-
                 {/* Playlist songs */}
                 <div className="grid grid-cols-1 w-full mt-5 ">
                     {errors.general && (
@@ -502,81 +647,80 @@ function Playlist() {
                     )}
                     <div className="flex justify-between items-center p-2 bg-gray-100">
                         <p className="text-lg w-10">#</p>
-                        <p className="text-lg flex-grow">Title</p>
+                        <p className="text-lg w-32 flex-grow">Title</p>
                         <p className="text-lg w-32 md:w-48">Album</p>
                         <p className="text-lg w-24 md:w-28">Added by</p>
                         <p className="text-lg w-24">Duration</p>
                     </div>
                     {playlist?.songs ? (
                         playlist.songs.length > 0 ? (
-                            playlist.songs.map((song) => (
+                            playlist.songs.map((song, index) => (
                                 <div
                                     className={`flex justify-between items-center p-2 hover:bg-[#ffc300] hover:cursor-pointer ${
                                         currentlyPlaying === song.youtubeId
-                                            ? "bg-amber-200"
+                                            ? "bg-[#ffc300]"
                                             : ""
                                     }`}
                                     key={song.id}
                                     onClick={() =>
                                         song.youtubeId &&
-                                        playSong(song.youtubeId)
+                                        playSong(song.youtubeId, index)
                                     }
                                 >
                                     <p className="text-lg w-10">
                                         {song.position}
                                     </p>
 
-                                    <div className="flex justify-start items-center gap-3 flex-grow">
+                                    <div className="flex flex-col md:flex-row justify-start items-start md:items-center gap-3 w-32 flex-grow">
                                         <img
                                             src={song.albumArtURL}
                                             alt="album art"
-                                            width={40}
-                                            height={40}
+                                            width={60}
+                                            height={80}
                                             className="rounded-sm"
                                         />
-                                        <div className="flex flex-col gap-2 w-32">
+                                        <div className="flex flex-col gap-2 w-32 md:w-48">
                                             <p
                                                 className={`${
                                                     song.isPlayed
-                                                        ? "text-[#ffc300]"
-                                                        : "text-[#003566]"
-                                                } text-lg poppins-medium`}
+                                                        ? "text-[#003566]"
+                                                        : ""
+                                                } text-sm md:text-md poppins-medium`}
                                             >
                                                 {song.title}
                                             </p>
-                                            <p className="text-gray-500">
+                                            <p className="text-[#003566]">
                                                 {song.artist}
                                             </p>
                                         </div>
                                     </div>
 
-                                    <p className="text-lg text-gray-300 w-30 md:40  truncate">
+                                    <p className="md:text-md text-sm text-[#003566] w-32 md:48 truncate">
                                         {song.album || "-"}
                                     </p>
 
-                                    <p className="text-lg text-gray-300 w-24 md:w-28">
+                                    <p className="text-lg text-[#003566] w-24 md:w-28">
                                         {song.addedById}
                                     </p>
 
-                                    <p className="text-lg text-gray-300">
+                                    <p className="text-lg text-[#003566] w-24">
                                         {formatDuration(song.duration)}
                                     </p>
                                 </div>
                             ))
                         ) : (
-                            <div className="flex justify-center items-center px-4 py-8 3g-gray-500">
+                            <div className="flex justify-center items-center px-4 py-8 bg-gray-300">
                                 <p className="text-xl">
                                     No songs found in this playlist
                                 </p>{" "}
                             </div>
                         )
                     ) : (
-                        <div className="flex justify-center items-center px-4 py-8 bg-gray-30 rounded-lg">
+                        <div className="flex justify-center items-center px-4 py-8 bg-gray-300 rounded-lg">
                             <p className="text-xl text-gray-500">Loading...</p>
                         </div>
                     )}
                 </div>
-
                 {isMadeByUser && (
                     <div className="flex flex-col gap-5 justify-center mt-8 bg-gray-100 p-6 rounded-lg">
                         <p className="text-2xl text-[#ffc300]">
@@ -623,7 +767,10 @@ function Playlist() {
                                     </h3>
                                     <div className="grid grid-cols-1 gap-3">
                                         {searchResults.map((result) => (
-                                            <div className="flex justify-between items-center p-3 bg-white rounded-lg shadow-sm">
+                                            <div
+                                                className="flex justify-between items-center p-3 bg-white rounded-lg shadow-sm"
+                                                key={result.id}
+                                            >
                                                 <div className="flex items-center gap-3">
                                                     <img
                                                         src={

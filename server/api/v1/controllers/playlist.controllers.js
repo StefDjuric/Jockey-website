@@ -323,7 +323,7 @@ const updateSongPlayStatus = asyncHandler(async (request, response) => {
 
         const song = await prisma.playlistSong.update({
             where: {
-                playlistId: playlistId,
+                playlistId: parseInt(playlistId),
                 youtubeId: youtubeId,
             },
             data: {
