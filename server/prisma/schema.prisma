@@ -29,6 +29,7 @@ model User {
 
   oAuthConnection  UserOAuth[]
   createdPlaylists Playlist[]         @relation("PlaylistCreator")
+  likedPlaylists   PlaylistLike[]
   memberships      PlaylistMember[]
   addedSongs       PlaylistSong[]     @relation("SongAdder")
   votes            SongVote[]
@@ -71,6 +72,7 @@ model Playlist {
   songs        PlaylistSong[]
   chatMessages ChatMessage[]
   activities   PlaylistActivity[]
+  likedBy      PlaylistLike[]
 
   @@map("playlists")
 }
@@ -87,6 +89,19 @@ model PlaylistMember {
 
   @@unique([playlistId, userId])
   @@map("playlist_members")
+}
+
+model PlaylistLike {
+  id         Int      @id @default(autoincrement())
+  playlistId Int
+  userId     Int
+  createdAt  DateTime @default(now())
+
+  playlist Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([playlistId, userId])
+  @@map("playlist_likes")
 }
 
 model PlaylistSong {

@@ -354,6 +354,118 @@ const updateSongPlayStatus = asyncHandler(async (request, response) => {
     }
 });
 
+const checkIfLiked = asyncHandler(async (request, response) => {
+    try {
+        const playlistId = parseInt(request.params["playlistId"]);
+        const userId = request?.user?.id;
+
+        const like = await prisma.playlistLike.findFirst({
+            where: {
+                playlistId: playlistId,
+                userId: userId,
+            },
+        });
+
+        return response
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    { success: true, isLiked: !!like },
+                    "Successfully checked if playlist liked."
+                )
+            );
+    } catch (error) {
+        return response
+            .status(500)
+            .json(
+                new ApiResponse(
+                    500,
+                    { success: false },
+                    "Failed to check if liked."
+                )
+            );
+    }
+});
+
+const likePlaylist = asyncHandler(async (request, response) => {
+    try {
+        let { playlistId } = request.body;
+
+        playlistId = parseInt(playlistId);
+
+        const userId = request?.user?.id;
+
+        let existingLike;
+
+        const result = await prisma.$transaction(async (prisma) => {
+            existingLike = await prisma.playlistLike.findUnique({
+                where: {
+                    playlistId_userId: {
+                        playlistId: playlistId,
+                        userId: userId,
+                    },
+                },
+            });
+
+            if (existingLike) {
+                await prisma.playlistLike.delete({
+                    where: {
+                        playlistId_userId: {
+                            playlistId,
+                            userId,
+                        },
+                    },
+                });
+
+                return prisma.playlist.update({
+                    where: {
+                        id: playlistId,
+                    },
+                    data: {
+                        likes: {
+                            decrement: 1,
+                        },
+                    },
+                });
+            } else {
+                await prisma.playlistLike.create({
+                    data: {
+                        playlistId: playlistId,
+                        userId: userId,
+                    },
+                });
+
+                return await prisma.playlist.update({
+                    where: {
+                        id: playlistId,
+                    },
+                    data: {
+                        likes: {
+                            increment: 1,
+                        },
+                    },
+                });
+            }
+        });
+
+        return response
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    { success: true, liked: !existingLike },
+                    "Successfully handled like."
+                )
+            );
+    } catch (error) {
+        console.error("Error handling like: ", error?.message);
+        return response
+            .status(500)
+            .json(new ApiResponse(500, { success: false }, error?.message));
+    }
+});
+
 export {
     createPlaylist,
     getUserPlaylists,
@@ -362,4 +474,6 @@ export {
     getPlaylist,
     addSongToPlaylist,
     updateSongPlayStatus,
+    likePlaylist,
+    checkIfLiked,
 };

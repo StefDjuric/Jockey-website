@@ -8,6 +8,8 @@ import {
     getPlaylist,
     addSongToPlaylist,
     updateSongPlayStatus,
+    likePlaylist,
+    checkIfLiked,
 } from "../controllers/playlist.controllers.js";
 
 const router = Router();
@@ -19,5 +21,7 @@ router.route("/is-made-by-user/:playlistId").get(verifyJWT, isMadeByUser);
 router.route("/get-playlist-songs/:playlistId").get(verifyJWT, getPlaylist);
 router.route("/add-song").post(verifyJWT, addSongToPlaylist);
 router.route("/update-song-status").put(verifyJWT, updateSongPlayStatus);
+router.route("/like-playlist").put(verifyJWT, likePlaylist);
+router.route("/check-if-liked/:playlistId").get(verifyJWT, checkIfLiked);
 
 export default router;

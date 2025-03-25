@@ -138,7 +138,7 @@ function Playlist() {
                 const data = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(data.message);
+                    throw new Error(data?.message);
                 } else {
                     setIsMadeByUser(data?.data?.isMadeByUser);
                 }
@@ -211,10 +211,71 @@ function Playlist() {
     // Get playlist with the id
     useEffect(() => {
         getPlaylistSongs();
+    }, [playlist?.likes]);
+
+    useEffect(() => {
+        async function checkIfLiked() {
+            try {
+                setErrors({});
+                const response = await fetch(
+                    `http://localhost:3000/api/v1/playlists/check-if-liked/${playlistId}`,
+                    {
+                        method: "GET",
+                        credentials: "include",
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        data?.message || "Failed to check if playlist is liked."
+                    );
+                }
+
+                setLiked(data?.data?.isLiked);
+            } catch (error: any) {
+                console.log(error?.message);
+                setErrors({ general: error?.message });
+            }
+        }
+        checkIfLiked();
     }, []);
 
-    const handleLike = () => {
-        setLiked(!liked);
+    const handleLike = async () => {
+        try {
+            const response = await fetch(
+                `http://localhost:3000/api/v1/playlists/like-playlist`,
+                {
+                    method: "PUT",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ playlistId }),
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data?.message || "Failed to like the playlist."
+                );
+            }
+            if (playlist?.likes !== undefined) {
+                if (data?.data?.liked) {
+                    playlist.likes += 1;
+                } else {
+                    playlist.likes -= 1;
+                }
+            }
+
+            setLiked(data?.data?.liked);
+        } catch (error: any) {
+            console.error(error?.message);
+            setErrors({ general: error?.message });
+        }
     };
 
     const initPlayer = (videoId: string) => {

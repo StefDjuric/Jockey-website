@@ -126,7 +126,7 @@ function Navbar(): React.ReactElement {
                             <Button
                                 type="button"
                                 label="Sign Up"
-                                styling="rounded-xl text-lg px-4 py-2 bg-[#ffc300] text-white hover:cursor-pointer hover:bg-[#aa8304]"
+                                styling="rounded-xl text-nowrap text-lg px-4 py-2 bg-[#ffc300] text-white hover:cursor-pointer hover:bg-[#aa8304]"
                             />
                         </Link>
 
@@ -134,7 +134,7 @@ function Navbar(): React.ReactElement {
                             <Button
                                 type="button"
                                 label="Log In"
-                                styling="rounded-xl text-lg px-4 py-2 bg-[#003566] text-white hover:cursor-pointer hover:bg-[#192a39]"
+                                styling="rounded-xl text-nowrap text-lg px-4 py-2 bg-[#003566] text-white hover:cursor-pointer hover:bg-[#192a39]"
                             />
                         </Link>
                     </>
