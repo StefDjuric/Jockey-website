@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import circleImage from "../../assets/circle-solid.svg";
 import likedHeartImage from "../../assets/heart-solid.svg";
 import Button from "../Button/Button";
@@ -7,6 +8,7 @@ import unlikedHeartImage from "../../assets/heart-regular.svg";
 import plusIcon from "../../assets/plus-solid.svg";
 import searchIcon from "../../assets/magnifying-glass-solid.svg";
 import pauseIcon from "../../assets/pause-solid.svg";
+import ButtonWithDropdownCard from "../ButtonWithDropdownCard/ButtonWithDropdownCard";
 
 declare global {
     interface Window {
@@ -83,14 +85,116 @@ function Playlist() {
     const [playButtonIcon, setPlayButtonIcon] = useState(playIcon);
     const currentSongIdxRef = useRef(currentSongIdx);
     const currentVideoIdRef = useRef<string | null>(null);
+    const [successMessage, setSuccessMessage] = useState<{
+        [key: string]: string;
+    }>({});
+    const navigate = useNavigate();
 
-    // const togglePlayIcon = () => {
-    //     if (playButtonIcon === playIcon) {
-    //         setPlayButtonIcon(pauseIcon);
-    //     } else {
-    //         setPlayButtonIcon(playIcon);
-    //     }
-    // };
+    const handleEditPlaylist = () => {
+        navigate(`/edit-playlist/${playlist?.name}/${playlist?.id}`);
+    };
+
+    const handleDeletePlaylist = async () => {
+        try {
+            const response = await fetch(
+                `http://localhost:3000/api/v1/playlists/delete-playlist/${playlist?.id}`,
+                {
+                    method: "DELETE",
+                    credentials: "include",
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data?.message || "Failed to delete playlist.");
+            }
+
+            setSuccessMessage({ general: data?.message });
+            navigate("/dashboard", { replace: true });
+        } catch (error: any) {
+            setErrors({ general: error?.message });
+            console.error(error?.message);
+        }
+    };
+
+    const handleInviteCollaborators = async () => {
+        setSuccessMessage({});
+        setErrors({});
+        try {
+            const response = await fetch(
+                "http://localhost:3000/api/v1/playlists/invite-collaborators",
+                {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        playlistId: playlistId,
+                        role: "collaborator",
+                    }),
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data?.message ||
+                        "Failed to generate link for collaborators."
+                );
+            }
+
+            setSuccessMessage({ general: data?.message });
+        } catch (error: any) {
+            console.error(error?.message);
+            setErrors({ general: error?.message });
+        }
+    };
+
+    const handleSharePlaylist = playlist?.isPublic
+        ? () => {
+              setSuccessMessage({});
+              console.log("Copying to clipboard");
+              window.navigator.clipboard.writeText(window.location.href);
+              setSuccessMessage({ general: "Copied link to clipboard." });
+          }
+        : async () => {
+              try {
+                  const response = await fetch(
+                      "http://localhost:3000/api/v1/playlists/get-share-code",
+                      {
+                          method: "PUT",
+                          credentials: "include",
+                          headers: {
+                              "Content-Type": "application/json",
+                          },
+                          body: JSON.stringify({ playlistId: playlistId }),
+                      }
+                  );
+
+                  const data = await response.json();
+
+                  if (!response.ok) {
+                      throw new Error(
+                          data?.message || "Failed to get playlist share code."
+                      );
+                  }
+
+                  setSuccessMessage({ general: data?.message });
+              } catch (error: any) {
+                  console.error(error?.message);
+                  setErrors({ general: error?.message });
+              }
+          };
+
+    const ELLIPSIS_CREATOR_OPTIONS = [
+        { label: "Edit Details", onClick: handleEditPlaylist },
+        { label: "Delete Playlist", onClick: handleDeletePlaylist },
+        { label: "Invite collaborators", onClick: handleInviteCollaborators },
+        { label: "Share Playlist", onClick: handleSharePlaylist },
+    ];
 
     useEffect(() => {
         currentSongIdxRef.current = currentSongIdx;
@@ -691,20 +795,28 @@ function Playlist() {
                                 height={40}
                             />
                         </button>
+                        <ButtonWithDropdownCard
+                            data={ELLIPSIS_CREATOR_OPTIONS}
+                        />
                     </div>
 
                     <input
                         type="search"
                         name="search"
                         id="search"
-                        placeholder="Search songs..."
-                        className="px-4 py-2 border-2 border-solid border-[#003566] rounded-lg"
+                        placeholder="Search playlist..."
+                        className="px-4 py-2 border-2 border-solid border-[#003566] rounded-lg w-[40%] lg:w-[30%]"
                     />
                 </div>
                 {/* Playlist songs */}
                 <div className="grid grid-cols-1 w-full mt-5 ">
                     {errors.general && (
                         <span className="text-red-500">{errors.general}</span>
+                    )}
+                    {successMessage.general && (
+                        <span className="text-green-500">
+                            {successMessage.general}
+                        </span>
                     )}
                     <div className="flex justify-between items-center p-2 bg-gray-100">
                         <p className="text-lg w-10">#</p>
