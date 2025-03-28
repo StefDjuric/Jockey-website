@@ -17,43 +17,44 @@ declare global {
     }
 }
 
-interface PlaylistSong {
-    id: number;
-    playlistId: number;
-    songId: number;
-    addedById: number;
-    addedAt: Date;
-    title: string;
-    artist: string;
-    album?: string;
-    duration?: number;
-    releaseDate?: Date;
-    albumArtURL?: string;
-    previerwURL?: string;
-    spotifyId?: string;
-    youtubeId?: string;
-    position: number;
-    isPlayed: boolean;
-    lastPlayedAt?: Date;
-    votes: number;
-    createdAt?: Date;
-}
+declare global {
+    interface PlaylistSong {
+        id: number;
+        playlistId: number;
+        songId: number;
+        addedById: number;
+        addedAt: Date;
+        title: string;
+        artist: string;
+        album?: string;
+        duration?: number;
+        releaseDate?: Date;
+        albumArtURL?: string;
+        previerwURL?: string;
+        spotifyId?: string;
+        youtubeId?: string;
+        position: number;
+        isPlayed: boolean;
+        lastPlayedAt?: Date;
+        votes: number;
+        createdAt?: Date;
+    }
 
-interface Playlist {
-    id: number;
-    creatorId: number;
-    name: string;
-    description?: string;
-    coverImage?: string;
-    likes: number;
-    isPublic: boolean;
-    isCollaborative: boolean;
-    shareCode?: string;
-    createdAt?: Date;
-    updatedAt?: Date;
-    songs: Array<PlaylistSong>;
+    interface Playlist {
+        id: number;
+        creatorId: number;
+        name: string;
+        description?: string;
+        coverImage?: string;
+        likes: number;
+        isPublic: boolean;
+        isCollaborative: boolean;
+        shareCode?: string;
+        createdAt?: Date;
+        updatedAt?: Date;
+        songs: Array<PlaylistSong>;
+    }
 }
-
 interface YoutubeSearchResults {
     id: string;
     title: string;
@@ -91,7 +92,11 @@ function Playlist() {
     const navigate = useNavigate();
 
     const handleEditPlaylist = () => {
-        navigate(`/edit-playlist/${playlist?.name}/${playlist?.id}`);
+        navigate(
+            `/edit-playlist/${playlist?.name.split(" ").join("-")}/${
+                playlist?.id
+            }`
+        );
     };
 
     const handleDeletePlaylist = async () => {

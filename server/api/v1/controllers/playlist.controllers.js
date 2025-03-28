@@ -224,6 +224,48 @@ const getPlaylist = asyncHandler(async (request, response) => {
     }
 });
 
+const editPlaylist = asyncHandler(async (request, response) => {
+    try {
+        const playlistId = parseInt(request?.params["playlistId"]);
+
+        const { playlistType, playlistDescription, playlistName, coverImage } =
+            request.body;
+
+        const isPublic = playlistType.toLowerCase() === "public" ? true : false;
+
+        if (!playlistName) {
+            throw new ApiError(404, "Playlist name is required.");
+        }
+
+        await prisma.playlist.update({
+            where: {
+                id: playlistId,
+            },
+            data: {
+                name: playlistName,
+                description: playlistDescription,
+                isPublic: isPublic,
+                coverImage: coverImage,
+            },
+        });
+
+        return response
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    { success: true },
+                    "Successfully updated playlist."
+                )
+            );
+    } catch (error) {
+        console.error(error?.message);
+        return response
+            .status(500)
+            .json(new ApiResponse(500, { success: false }, error?.message));
+    }
+});
+
 const addSongToPlaylist = asyncHandler(async (request, response) => {
     try {
         const { playlistId, title, artist, albumArtURL, youtubeId, duration } =
@@ -472,6 +514,7 @@ export {
     getTrendingPlaylists,
     isMadeByUser,
     getPlaylist,
+    editPlaylist,
     addSongToPlaylist,
     updateSongPlayStatus,
     likePlaylist,

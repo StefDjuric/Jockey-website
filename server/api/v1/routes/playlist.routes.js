@@ -10,6 +10,7 @@ import {
     updateSongPlayStatus,
     likePlaylist,
     checkIfLiked,
+    editPlaylist,
 } from "../controllers/playlist.controllers.js";
 
 const router = Router();
@@ -23,5 +24,6 @@ router.route("/add-song").post(verifyJWT, addSongToPlaylist);
 router.route("/update-song-status").put(verifyJWT, updateSongPlayStatus);
 router.route("/like-playlist").put(verifyJWT, likePlaylist);
 router.route("/check-if-liked/:playlistId").get(verifyJWT, checkIfLiked);
+router.route("/edit-playlist/:playlistId").put(verifyJWT, editPlaylist);
 
 export default router;
