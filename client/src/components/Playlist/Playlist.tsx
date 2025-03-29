@@ -800,9 +800,15 @@ function Playlist() {
                                 height={40}
                             />
                         </button>
-                        <ButtonWithDropdownCard
-                            data={ELLIPSIS_CREATOR_OPTIONS}
-                        />
+                        {isMadeByUser ? (
+                            <ButtonWithDropdownCard
+                                data={ELLIPSIS_CREATOR_OPTIONS}
+                            />
+                        ) : (
+                            <ButtonWithDropdownCard
+                                data={[ELLIPSIS_CREATOR_OPTIONS[3]]}
+                            />
+                        )}
                     </div>
 
                     <input

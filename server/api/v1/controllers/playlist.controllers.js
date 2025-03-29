@@ -266,6 +266,37 @@ const editPlaylist = asyncHandler(async (request, response) => {
     }
 });
 
+const deletePlaylist = asyncHandler(async (request, response) => {
+    try {
+        const playlistId = parseInt(request?.params["playlistId"]);
+
+        const deletedPlaylist = await prisma.playlist.delete({
+            where: {
+                id: playlistId,
+            },
+        });
+
+        if (!deletedPlaylist) {
+            throw new ApiError(500, "Failed to delete the playlist");
+        }
+
+        return response
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    { success: true },
+                    "Successfully deleted the playlist."
+                )
+            );
+    } catch (error) {
+        console.error(error?.message);
+        return response
+            .status(500)
+            .json(new ApiResponse(500, { success: false }, error?.message));
+    }
+});
+
 const addSongToPlaylist = asyncHandler(async (request, response) => {
     try {
         const { playlistId, title, artist, albumArtURL, youtubeId, duration } =
@@ -519,4 +550,5 @@ export {
     updateSongPlayStatus,
     likePlaylist,
     checkIfLiked,
+    deletePlaylist,
 };

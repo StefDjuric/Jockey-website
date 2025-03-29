@@ -11,6 +11,7 @@ import {
     likePlaylist,
     checkIfLiked,
     editPlaylist,
+    deletePlaylist,
 } from "../controllers/playlist.controllers.js";
 
 const router = Router();
@@ -25,5 +26,6 @@ router.route("/update-song-status").put(verifyJWT, updateSongPlayStatus);
 router.route("/like-playlist").put(verifyJWT, likePlaylist);
 router.route("/check-if-liked/:playlistId").get(verifyJWT, checkIfLiked);
 router.route("/edit-playlist/:playlistId").put(verifyJWT, editPlaylist);
+router.route("/delete-playlist/:playlistId").delete(verifyJWT, deletePlaylist);
 
 export default router;
