@@ -177,7 +177,6 @@ const loginUser = asyncHandler(async (request, response) => {
                 )
             );
     } catch (error) {
-        console.error("Log in error: ", error);
         return response
             .status(500)
             .json(
@@ -375,7 +374,6 @@ const uploadImage = asyncHandler(async (request, response) => {
             )
         );
     } catch (error) {
-        console.error("Failed to upload to cloudinary. ", error.message);
         return response
             .status(500)
             .json(new ApiResponse(500, { success: false }, error.message));
@@ -410,10 +408,71 @@ const checkAuthentication = asyncHandler(async (request, response) => {
                 )
             );
     } catch (error) {
-        console.error(error.message);
         return response
             .status(500)
             .json(new ApiResponse(500, { isLoggedIn: false }, error.message));
+    }
+});
+
+const checkIfCollaborator = asyncHandler(async (request, response) => {
+    try {
+        const playlistId = parseInt(request.params["playlistId"]);
+        const userId = request.user?.id;
+
+        if (!userId) {
+            throw new ApiError(401, "User not authenticated.");
+        }
+
+        const playlist = await prisma.playlist.findUnique({
+            where: {
+                id: playlistId,
+            },
+            select: {
+                id: true,
+                creatorId: true,
+            },
+        });
+
+        if (!playlist) {
+            throw new ApiError(404, "No playlist found.");
+        }
+
+        if (playlist.creatorId === userId) {
+            return response
+                .status(200)
+                .json(
+                    new ApiResponse(200, {
+                        success: true,
+                        isCollaborator: true,
+                    })
+                );
+        }
+
+        const member = await prisma.playlistMember.findFirst({
+            where: {
+                userId: userId,
+                playlistId: playlistId,
+                role: "collaborator",
+            },
+        });
+
+        return response.status(200).json(
+            new ApiResponse(200, {
+                success: true,
+                isCollaborator: !!member,
+                role: member?.role || null,
+            })
+        );
+    } catch (error) {
+        return response
+            .status(error?.statusCode || 500)
+            .json(
+                new ApiResponse(
+                    error?.statusCode || 500,
+                    { success: false },
+                    error?.message || "Internal server error."
+                )
+            );
     }
 });
 
@@ -425,4 +484,5 @@ export {
     logOut,
     uploadImage,
     checkAuthentication,
+    checkIfCollaborator,
 };

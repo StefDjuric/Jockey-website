@@ -20,6 +20,7 @@ import ProtectedRoutes from "./components/ProtectedRoutes/ProtectedRoutes.tsx";
 import PublicRoutes from "./components/PublicRoutes/PublicRoutes.tsx";
 import Playlist from "./components/Playlist/Playlist.tsx";
 import EditPlaylist from "./components/EditPlaylist/EditPlaylist.tsx";
+import JoinPlaylist from "./components/JoinPlaylistAsCollaborator/JoinPlaylistAsCollaborator.tsx";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -40,6 +41,7 @@ const router = createBrowserRouter(
                     element={<EditPlaylist />}
                 />
                 <Route path="playlists/create" element={<CreatePlaylist />} />
+                <Route path="join-playlist" element={<JoinPlaylist />} />
             </Route>
         </Route>
     )

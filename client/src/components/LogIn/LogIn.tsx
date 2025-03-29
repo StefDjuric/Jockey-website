@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Button from "../Button/Button";
 import { FormEvent, useState } from "react";
 import { useAuth } from "../Providers/AuthContextProvider";
@@ -12,6 +12,8 @@ function LogIn() {
     });
     const { setIsLoggedIn } = useAuth();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const redirectSearchParam = searchParams.get("redirect");
 
     const handleLogIn = async (event: FormEvent) => {
         event.preventDefault();
@@ -41,7 +43,9 @@ function LogIn() {
 
             setIsLoggedIn(true);
 
-            navigate("/dashboard", { replace: true });
+            redirectSearchParam
+                ? window.location.replace(redirectSearchParam)
+                : navigate("/dashboard", { replace: true });
         } catch (error: any) {
             setErrors({
                 password: error.message || "An unexpected error occured.",

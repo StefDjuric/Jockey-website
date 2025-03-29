@@ -67,6 +67,7 @@ function Playlist() {
     const [playlist, setPlaylist] = useState<Playlist>();
     const [liked, setLiked] = useState(false);
     const [isMadeByUser, setIsMadeByUser] = useState<boolean>(false);
+    const [isCollaborator, setIsCollaborator] = useState<boolean>(false);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [playlistUsername, setPlaylistUsername] = useState<string>("");
     const playlistId = window.location.href.split("/")[5];
@@ -119,7 +120,6 @@ function Playlist() {
             navigate("/dashboard", { replace: true });
         } catch (error: any) {
             setErrors({ general: error?.message });
-            console.error(error?.message);
         }
     };
 
@@ -130,14 +130,13 @@ function Playlist() {
             const response = await fetch(
                 "http://localhost:3000/api/v1/playlists/invite-collaborators",
                 {
-                    method: "POST",
+                    method: "PUT",
                     credentials: "include",
                     headers: {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
                         playlistId: playlistId,
-                        role: "collaborator",
                     }),
                 }
             );
@@ -151,9 +150,15 @@ function Playlist() {
                 );
             }
 
-            setSuccessMessage({ general: data?.message });
+            const collaboratorLink = `${window.location.origin}/join-playlist?shareCode=${data?.data?.shareCode}`;
+
+            window.navigator.clipboard.writeText(collaboratorLink);
+
+            setSuccessMessage({
+                general:
+                    "Successfully copied collaborator link to clipboard. Share playlist with friends!",
+            });
         } catch (error: any) {
-            console.error(error?.message);
             setErrors({ general: error?.message });
         }
     };
@@ -189,7 +194,6 @@ function Playlist() {
 
                   setSuccessMessage({ general: data?.message });
               } catch (error: any) {
-                  console.error(error?.message);
                   setErrors({ general: error?.message });
               }
           };
@@ -257,6 +261,37 @@ function Playlist() {
         }
 
         isMadeByUser();
+    }, []);
+
+    // Check if user is collaborator on the playlist
+    useEffect(() => {
+        async function checkIfCollaborator() {
+            setErrors({});
+            try {
+                const response = await fetch(
+                    `http://localhost:3000/api/v1/users/check-if-collaborator/${playlistId}`,
+                    {
+                        method: "GET",
+                        credentials: "include",
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        data?.message ||
+                            "Failed to check if user is collaborator."
+                    );
+                }
+
+                setIsCollaborator(data?.data?.isCollaborator);
+            } catch (error: any) {
+                setErrors({ general: error?.message });
+            }
+        }
+
+        checkIfCollaborator();
     }, []);
 
     async function getPlaylistSongs() {
@@ -905,7 +940,7 @@ function Playlist() {
                         </div>
                     )}
                 </div>
-                {isMadeByUser && (
+                {(isMadeByUser || isCollaborator) && (
                     <div className="flex flex-col gap-5 justify-center mt-8 bg-gray-100 p-6 rounded-lg">
                         <p className="text-2xl text-[#ffc300]">
                             {playlist?.songs && playlist.songs.length > 0

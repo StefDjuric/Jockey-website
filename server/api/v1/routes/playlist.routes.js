@@ -12,6 +12,9 @@ import {
     checkIfLiked,
     editPlaylist,
     deletePlaylist,
+    inviteCollaborators,
+    getPlaylistByShareCode,
+    joinPlaylist,
 } from "../controllers/playlist.controllers.js";
 
 const router = Router();
@@ -27,5 +30,10 @@ router.route("/like-playlist").put(verifyJWT, likePlaylist);
 router.route("/check-if-liked/:playlistId").get(verifyJWT, checkIfLiked);
 router.route("/edit-playlist/:playlistId").put(verifyJWT, editPlaylist);
 router.route("/delete-playlist/:playlistId").delete(verifyJWT, deletePlaylist);
+router.route("/invite-collaborators").put(verifyJWT, inviteCollaborators);
+router
+    .route("/get-playlist-by-share-code")
+    .get(verifyJWT, getPlaylistByShareCode);
+router.route("/join-as-collaborator").post(verifyJWT, joinPlaylist);
 
 export default router;

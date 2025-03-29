@@ -7,6 +7,7 @@ import {
     logOut,
     uploadImage,
     checkAuthentication,
+    checkIfCollaborator,
 } from "../controllers/user.controllers.js";
 import { verifyJWT } from "../middleware/auth.middleware.js";
 import { upload } from "../middleware/multer.middleware.js";
@@ -22,5 +23,8 @@ router
     .route("/upload-image")
     .post(verifyJWT, upload.single("file"), uploadImage);
 router.route("/check-auth").get(checkAuthentication);
+router
+    .route("/check-if-collaborator/:playlistId")
+    .get(verifyJWT, checkIfCollaborator);
 
 export default router;

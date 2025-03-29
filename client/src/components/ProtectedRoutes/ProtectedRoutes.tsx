@@ -8,7 +8,11 @@ const ProtectedRoutes = () => {
         return;
     }
 
-    return isLoggedIn ? <Outlet /> : <Navigate to={"/login"} replace />;
+    return isLoggedIn ? (
+        <Outlet />
+    ) : (
+        <Navigate to={`/login?redirect=${window.location.href}`} replace />
+    );
 };
 
 export default ProtectedRoutes;
