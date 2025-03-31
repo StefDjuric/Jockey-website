@@ -15,6 +15,8 @@ import {
     inviteCollaborators,
     getPlaylistByShareCode,
     joinPlaylist,
+    joinPrivatePlaylist,
+    getPlaylistShareCode,
 } from "../controllers/playlist.controllers.js";
 
 const router = Router();
@@ -34,6 +36,9 @@ router.route("/invite-collaborators").put(verifyJWT, inviteCollaborators);
 router
     .route("/get-playlist-by-share-code")
     .get(verifyJWT, getPlaylistByShareCode);
-router.route("/join-as-collaborator").post(verifyJWT, joinPlaylist);
-
+router.route("/join-playlist").post(verifyJWT, joinPlaylist);
+router.route("/join-private-playlist").post(verifyJWT, joinPrivatePlaylist);
+router
+    .route("/get-share-code/:playlistId")
+    .get(verifyJWT, getPlaylistShareCode);
 export default router;

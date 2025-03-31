@@ -47,11 +47,11 @@ function JoinPlaylist() {
         }
     }, [shareCode]);
 
-    const handleJoinPlaylist = async () => {
+    const handleJoinPlaylist = async (role: string) => {
         try {
             setLoading(true);
             const response = await fetch(
-                "http://localhost:3000/api/v1/playlists/join-as-collaborator",
+                "http://localhost:3000/api/v1/playlists/join-playlist",
                 {
                     method: "POST",
                     credentials: "include",
@@ -60,7 +60,7 @@ function JoinPlaylist() {
                     },
                     body: JSON.stringify({
                         shareCode,
-                        role: "collaborator",
+                        role: role,
                     }),
                 }
             );
@@ -71,7 +71,7 @@ function JoinPlaylist() {
                 throw new Error(data?.message || "Failed to join playlist.");
             }
 
-            setSuccess("You have successfully joined as a collaborator!");
+            setSuccess(`You have successfully joined as a ${data.data.role}`);
 
             setTimeout(() => {
                 navigate(
@@ -102,7 +102,7 @@ function JoinPlaylist() {
                 <Button
                     label="Go to Dashboard"
                     onClick={() => navigate("/dashboard")}
-                    styling="px-6 py-3 bg-[#ffc300] text-black rounded-lg hover:bg-[#aa8304]"
+                    styling="px-6 py-3 bg-[#ffc300] text-black rounded-lg hover:bg-[#aa8304] hover:cursor-pointer"
                     type="button"
                 />
             </div>
@@ -141,7 +141,7 @@ function JoinPlaylist() {
                 <div className="flex justify-center">
                     <Button
                         label="Join as Collaborator"
-                        onClick={handleJoinPlaylist}
+                        onClick={() => handleJoinPlaylist("collaborator")}
                         styling="px-6 py-3 bg-[#ffc300] text-black rounded-lg hover:bg-[#aa8304] w-full"
                         type="button"
                     />

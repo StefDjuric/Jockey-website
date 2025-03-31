@@ -438,14 +438,12 @@ const checkIfCollaborator = asyncHandler(async (request, response) => {
         }
 
         if (playlist.creatorId === userId) {
-            return response
-                .status(200)
-                .json(
-                    new ApiResponse(200, {
-                        success: true,
-                        isCollaborator: true,
-                    })
-                );
+            return response.status(200).json(
+                new ApiResponse(200, {
+                    success: true,
+                    isCollaborator: true,
+                })
+            );
         }
 
         const member = await prisma.playlistMember.findFirst({
@@ -476,6 +474,75 @@ const checkIfCollaborator = asyncHandler(async (request, response) => {
     }
 });
 
+const checkIfMember = asyncHandler(async (request, response) => {
+    try {
+        const playlistId = parseInt(request.params["playlistId"]);
+
+        const userId = request.user.id;
+
+        if (!playlistId) {
+            throw new ApiError(404, "PlaylistId is missing as a parameter.");
+        }
+
+        if (!userId) {
+            throw new ApiError(401, "Unauthorized access. Please log in.");
+        }
+
+        const playlist = await prisma.playlist.findUnique({
+            where: {
+                id: playlistId,
+            },
+            select: {
+                id: true,
+                creatorId: true,
+            },
+        });
+
+        if (!playlist) {
+            throw new ApiError(404, "Playlist not found.");
+        }
+
+        if (playlist.creatorId === userId) {
+            return response
+                .status(200)
+                .json(
+                    new ApiResponse(
+                        200,
+                        { isMember: true, success: true },
+                        "Successfully entered the playlist."
+                    )
+                );
+        }
+
+        const member = await prisma.playlistMember.findFirst({
+            where: {
+                playlistId: playlistId,
+                userId: userId,
+            },
+        });
+
+        return response
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    { success: true, isMember: !!member },
+                    "Successfully entered the playlist."
+                )
+            );
+    } catch (error) {
+        console.error(error?.message || "Internal server error.");
+        return response
+            .status(error?.statusCode || 500)
+            .json(
+                new ApiResponse(
+                    error?.statusCode,
+                    { success: false, isMember: false },
+                    error?.message || "Internal server error."
+                )
+            );
+    }
+});
 export {
     registerUser,
     loginUser,
@@ -485,4 +552,5 @@ export {
     uploadImage,
     checkAuthentication,
     checkIfCollaborator,
+    checkIfMember,
 };

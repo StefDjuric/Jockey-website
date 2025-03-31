@@ -166,21 +166,19 @@ function Playlist() {
     const handleSharePlaylist = playlist?.isPublic
         ? () => {
               setSuccessMessage({});
-              console.log("Copying to clipboard");
               window.navigator.clipboard.writeText(window.location.href);
               setSuccessMessage({ general: "Copied link to clipboard." });
           }
         : async () => {
               try {
                   const response = await fetch(
-                      "http://localhost:3000/api/v1/playlists/get-share-code",
+                      `http://localhost:3000/api/v1/playlists/get-share-code/${playlistId}`,
                       {
-                          method: "PUT",
+                          method: "GET",
                           credentials: "include",
                           headers: {
                               "Content-Type": "application/json",
                           },
-                          body: JSON.stringify({ playlistId: playlistId }),
                       }
                   );
 
@@ -192,7 +190,13 @@ function Playlist() {
                       );
                   }
 
-                  setSuccessMessage({ general: data?.message });
+                  if (data?.data?.shareCode) {
+                      window.navigator.clipboard.writeText(data.data.shareCode);
+                      setSuccessMessage({
+                          general:
+                              "Share code copied to clipboard. Share playlist with friends.",
+                      });
+                  }
               } catch (error: any) {
                   setErrors({ general: error?.message });
               }

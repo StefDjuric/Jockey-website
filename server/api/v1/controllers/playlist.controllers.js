@@ -27,12 +27,19 @@ const createPlaylist = asyncHandler(async (request, response) => {
             throw new ApiError(404, "Could not find user with the token id.");
         }
 
+        // Random shareCode
+        const shareCode = Math.random()
+            .toString(36)
+            .substring(2, 10)
+            .toUpperCase();
+
         const playlist = await prisma.playlist.create({
             data: {
                 name: playlistName,
                 description: playlistDescription,
                 isPublic: isPublic,
                 coverImage: coverImage,
+                shareCode: shareCode,
 
                 creator: {
                     connect: {
@@ -100,7 +107,6 @@ const getTrendingPlaylists = asyncHandler(async (request, response) => {
                 updatedAt: {
                     gte: dateThreshold,
                 },
-                isPublic: true,
             },
             orderBy: {
                 likes: "desc",
@@ -574,10 +580,10 @@ const inviteCollaborators = asyncHandler(async (request, response) => {
             if (playlist.shareCode) {
                 return playlist.shareCode;
             } else {
-                const uniqueCode = await bcrypt.hash(
-                    playlist.id.toString(),
-                    10
-                );
+                const uniqueCode = Math.random()
+                    .toString(36)
+                    .substring(2, 10)
+                    .toUpperCase();
 
                 await prisma.playlist.update({
                     where: {
@@ -726,6 +732,7 @@ const joinPlaylist = asyncHandler(async (request, response) => {
                     success: true,
                     playlistId: playlist.id,
                     playlistName: playlist.name,
+                    role: role,
                 },
                 `Successfully joined the playlist as ${role}.`
             )
@@ -738,6 +745,108 @@ const joinPlaylist = asyncHandler(async (request, response) => {
                     error?.statusCode,
                     { success: false },
                     error?.message
+                )
+            );
+    }
+});
+
+const joinPrivatePlaylist = asyncHandler(async (request, response) => {
+    try {
+        const { shareCode, playlistId } = request.body;
+        const userId = request.user.id;
+
+        if (!shareCode) {
+            throw new ApiError(404, "Share code is required.");
+        }
+
+        if (!userId) {
+            throw new ApiError(401, "Unauthorized user. Please log in");
+        }
+
+        const playlist = await prisma.playlist.findUnique({
+            where: {
+                shareCode: shareCode,
+                id: playlistId,
+            },
+            select: {
+                id: true,
+            },
+        });
+
+        if (!playlist) {
+            throw new ApiError(400, "Share code is wrong. Please try again.");
+        }
+
+        await prisma.playlistMember.create({
+            data: {
+                playlistId: playlist.id,
+                userId: userId,
+                role: "member",
+            },
+        });
+
+        return response
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    { success: true },
+                    "Successfully joined the playlist."
+                )
+            );
+    } catch (error) {
+        console.error(error?.message);
+        return response
+            .status(error.statusCode)
+            .json(
+                new ApiResponse(
+                    error.statusCode,
+                    { success: false },
+                    error.message || "Failed to join playlist."
+                )
+            );
+    }
+});
+
+const getPlaylistShareCode = asyncHandler(async (request, response) => {
+    try {
+        const playlistId = parseInt(request.params["playlistId"]);
+
+        if (!playlistId) {
+            throw new ApiError(404, "PlaylistId parameter not found.");
+        }
+
+        const playlist = await prisma.playlist.findUnique({
+            where: {
+                id: playlistId,
+            },
+            select: {
+                shareCode: true,
+            },
+        });
+
+        if (!playlist) {
+            throw new ApiError(404, "Playlist not found.");
+        }
+
+        return response
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    { success: true, shareCode: playlist.shareCode },
+                    "Successfully fetched share code."
+                )
+            );
+    } catch (error) {
+        console.error(error?.message || "Internal server error");
+        return response
+            .status(error?.statusCode || 500)
+            .json(
+                new ApiResponse(
+                    error?.statusCode || 500,
+                    { success: false, shareCode: null },
+                    error?.message || "Internal server error."
                 )
             );
     }
@@ -758,4 +867,6 @@ export {
     inviteCollaborators,
     getPlaylistByShareCode,
     joinPlaylist,
+    joinPrivatePlaylist,
+    getPlaylistShareCode,
 };
