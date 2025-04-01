@@ -23,6 +23,10 @@ declare global {
         playlistId: number;
         songId: number;
         addedById: number;
+        addedBy: {
+            id: number;
+            username: string;
+        };
         addedAt: Date;
         title: string;
         artist: string;
@@ -850,13 +854,13 @@ function Playlist() {
                         )}
                     </div>
 
-                    <input
+                    {/* <input
                         type="search"
                         name="search"
                         id="search"
                         placeholder="Search playlist..."
                         className="px-4 py-2 border-2 border-solid border-[#003566] rounded-lg w-[40%] lg:w-[30%]"
-                    />
+                    /> */}
                 </div>
                 {/* Playlist songs */}
                 <div className="grid grid-cols-1 w-full mt-5 ">
@@ -871,9 +875,9 @@ function Playlist() {
                     <div className="flex justify-between items-center p-2 bg-gray-100">
                         <p className="text-lg w-10">#</p>
                         <p className="text-lg w-32 flex-grow">Title</p>
-                        <p className="text-lg w-32 md:w-48">Album</p>
-                        <p className="text-lg w-24 md:w-28">Added by</p>
-                        <p className="text-lg w-24">Duration</p>
+                        <p className="text-lg w-25 md:w-30">Album</p>
+                        <p className="text-lg w-30 md:w-34">Added by</p>
+                        <p className="text-lg w-28">Duration</p>
                     </div>
                     {playlist?.songs ? (
                         playlist.songs.length > 0 ? (
@@ -918,12 +922,12 @@ function Playlist() {
                                         </div>
                                     </div>
 
-                                    <p className="md:text-md text-sm text-[#003566] w-32 md:48 truncate">
+                                    <p className="md:text-md text-sm text-[#003566] w-32 md:w-24 truncate">
                                         {song.album || "-"}
                                     </p>
 
-                                    <p className="text-lg text-[#003566] w-24 md:w-28">
-                                        {song.addedById}
+                                    <p className="text-lg text-[#003566] w-58 md:w-38 text-wrap">
+                                        {song.addedBy.username}
                                     </p>
 
                                     <p className="text-lg text-[#003566] w-24">

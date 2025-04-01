@@ -199,7 +199,16 @@ const getPlaylist = asyncHandler(async (request, response) => {
                 id: playlistId,
             },
             include: {
-                songs: true,
+                songs: {
+                    include: {
+                        addedBy: {
+                            select: {
+                                username: true,
+                                id: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
@@ -373,7 +382,17 @@ const addSongToPlaylist = asyncHandler(async (request, response) => {
                 id: parseInt(playlistId),
             },
             include: {
-                songs: true,
+                songs: {
+                    include: {
+                        addedBy: {
+                            select: {
+                                username: true,
+                                id: true,
+                            },
+                        },
+                    },
+                },
+                members: true,
             },
         });
 
