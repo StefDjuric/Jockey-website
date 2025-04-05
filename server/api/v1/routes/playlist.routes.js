@@ -17,6 +17,8 @@ import {
     joinPlaylist,
     joinPrivatePlaylist,
     getPlaylistShareCode,
+    sendMessage,
+    fetchMessages,
 } from "../controllers/playlist.controllers.js";
 
 const router = Router();
@@ -41,4 +43,6 @@ router.route("/join-private-playlist").post(verifyJWT, joinPrivatePlaylist);
 router
     .route("/get-share-code/:playlistId")
     .get(verifyJWT, getPlaylistShareCode);
+router.route("/chat/send-message").post(verifyJWT, sendMessage);
+router.route("/chat/fetch-messages/:playlistId").get(fetchMessages);
 export default router;

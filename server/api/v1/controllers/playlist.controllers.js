@@ -2,7 +2,6 @@ import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { PrismaClient } from "@prisma/client";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -175,6 +174,7 @@ const isMadeByUser = asyncHandler(async (request, response) => {
                 {
                     success: true,
                     isMadeByUser: isMadeByUser,
+                    userId: userId,
                 },
                 "Successfully checked if made by user."
             )
@@ -871,6 +871,110 @@ const getPlaylistShareCode = asyncHandler(async (request, response) => {
     }
 });
 
+const fetchMessages = asyncHandler(async (request, response) => {
+    try {
+        const playlistId = parseInt(request.params["playlistId"]);
+
+        if (!playlistId) {
+            throw new ApiError(404, "PlaylistId not found in parameters.");
+        }
+
+        const playlistMessages = await prisma.chatMessage.findMany({
+            where: {
+                playlistId: playlistId,
+            },
+            include: {
+                user: {
+                    select: {
+                        username: true,
+                        avatar: true,
+                    },
+                },
+            },
+            orderBy: {
+                sentAt: "asc",
+            },
+        });
+
+        return response
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    { success: true, messages: playlistMessages || [] },
+                    "Successfully fetched messages."
+                )
+            );
+    } catch (error) {
+        console.error(error?.message || "Internal server error");
+        return response
+            .status(error?.statusCode || 500)
+            .json(
+                new ApiResponse(
+                    error?.statusCode || 500,
+                    { success: false, messages: [] },
+                    error?.message || "Internal server error."
+                )
+            );
+    }
+});
+
+const sendMessage = asyncHandler(async (request, response) => {
+    try {
+        const { playlistId, message } = await request.body;
+        const userId = request.user.id;
+
+        const newMessage = await prisma.chatMessage.create({
+            data: {
+                playlistId: playlistId,
+                userId: userId,
+                message: message,
+            },
+            include: {
+                user: {
+                    select: {
+                        username: true,
+                        avatar: true,
+                    },
+                },
+            },
+        });
+
+        await prisma.playlistActivity.create({
+            data: {
+                playlistId: playlistId,
+                userId: userId,
+                actionType: "SEND_MESSAGE",
+            },
+        });
+
+        const io = request.app.get("io");
+
+        io.to(playlistId.toString()).emit("receive_message", newMessage);
+
+        return response
+            .status(201)
+            .json(
+                new ApiResponse(
+                    201,
+                    { success: true, message, newMessage },
+                    "Successfully stored message in database."
+                )
+            );
+    } catch (error) {
+        console.error("Server error: ", error?.message);
+        return response
+            .status(error?.statusCode || 500)
+            .json(
+                new ApiResponse(
+                    error?.statusCode || 500,
+                    { success: false },
+                    error?.message || "Failed to send message."
+                )
+            );
+    }
+});
+
 export {
     createPlaylist,
     getUserPlaylists,
@@ -888,4 +992,6 @@ export {
     joinPlaylist,
     joinPrivatePlaylist,
     getPlaylistShareCode,
+    fetchMessages,
+    sendMessage,
 };

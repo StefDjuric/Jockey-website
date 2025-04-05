@@ -9,6 +9,8 @@ import plusIcon from "../../assets/plus-solid.svg";
 import searchIcon from "../../assets/magnifying-glass-solid.svg";
 import pauseIcon from "../../assets/pause-solid.svg";
 import ButtonWithDropdownCard from "../ButtonWithDropdownCard/ButtonWithDropdownCard";
+import PlaylistChat from "../PlaylistChat/PlaylistChat";
+import { socket } from "../../utils/socket";
 
 declare global {
     interface Window {
@@ -212,6 +214,14 @@ function Playlist() {
         { label: "Invite collaborators", onClick: handleInviteCollaborators },
         { label: "Share Playlist", onClick: handleSharePlaylist },
     ];
+
+    const joinPlaylistRoom = () => {
+        socket.emit("join_room", playlistId.toString());
+    };
+
+    useEffect(() => {
+        joinPlaylistRoom();
+    }, []);
 
     useEffect(() => {
         currentSongIdxRef.current = currentSongIdx;
@@ -751,8 +761,8 @@ function Playlist() {
                     <img
                         src={playlist?.coverImage}
                         alt="cover image"
-                        width={50}
-                        height={60}
+                        width={100}
+                        height={150}
                     />
                     <div className="flex-flex-col justify-center gap-2">
                         <p className="text-lg lg:text-xl text-nowrap">
@@ -1036,6 +1046,7 @@ function Playlist() {
                     </div>
                 )}
             </div>
+            <PlaylistChat playlistId={parseInt(playlistId)} />
         </div>
     );
 }

@@ -1,4 +1,5 @@
 import express, { urlencoded } from "express";
+import dotenv from "dotenv";
 import cors from "cors";
 import { fileURLToPath } from "url";
 import path from "path";
@@ -9,6 +10,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+
+dotenv.config({
+    path: "./.env",
+});
 
 app.use(
     cors({
