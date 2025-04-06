@@ -21,10 +21,14 @@ import PublicRoutes from "./components/PublicRoutes/PublicRoutes.tsx";
 import Playlist from "./components/Playlist/Playlist.tsx";
 import EditPlaylist from "./components/EditPlaylist/EditPlaylist.tsx";
 import JoinPlaylist from "./components/JoinPlaylistAsCollaborator/JoinPlaylistAsCollaborator.tsx";
+import About from "./components/AboutUs/AboutUs.tsx";
+import Contact from "./components/ContactUs/ContactUs.tsx";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
         <Route path="/" element={<Layout />}>
+            <Route path="about" element={<About />} />
+            <Route path="contact" element={<Contact />} />
             <Route element={<PublicRoutes />}>
                 <Route path="" element={<Home />} />
                 <Route path="signup" element={<SignUp />} />

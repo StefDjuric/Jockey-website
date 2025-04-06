@@ -35,7 +35,7 @@ function Footer(): React.ReactElement {
 
                         <li className="flex justify-between items-center hover:text-[#ffc300]">
                             <a
-                                href="#"
+                                href="https://www.instagram.com/stefan_djuric01/"
                                 className="flex justify-between items-center gap-1"
                             >
                                 <img
@@ -49,7 +49,7 @@ function Footer(): React.ReactElement {
                         </li>
                         <li className="flex justify-between items-center hover:text-[#ffc300]">
                             <a
-                                href="#"
+                                href="https://www.facebook.com/stefan.djuric.7771"
                                 className="flex justify-between items-center gap-1"
                             >
                                 <img
