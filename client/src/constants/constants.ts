@@ -6,5 +6,5 @@ export const PUBLIC_NAV_LINKS = [
 export const PRIVATE_NAV_LINKS = [
     { label: "Dashboard", href: "/dashboard", key: 3 },
     { label: "Playlists", href: "/playlists", key: 4 },
-    { label: "Edit profile", href: "/", key: 5 },
+    { label: "Edit profile", href: "/edit-profile", key: 5 },
 ];

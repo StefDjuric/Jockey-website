@@ -67,7 +67,7 @@ model Playlist {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @default(now()) @updatedAt
 
-  creator      User               @relation("PlaylistCreator", fields: [creatorId], references: [id])
+  creator      User               @relation("PlaylistCreator", fields: [creatorId], references: [id], onDelete: Cascade)
   members      PlaylistMember[]
   songs        PlaylistSong[]
   chatMessages ChatMessage[]
@@ -153,7 +153,7 @@ model ChatMessage {
   isSystemMessage Boolean  @default(false)
 
   playlist Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
-  user     User     @relation(fields: [userId], references: [id])
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("chat_messages")
 }
@@ -167,7 +167,7 @@ model PlaylistActivity {
   createdAt  DateTime @default(now())
 
   playlist Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
-  user     User     @relation(fields: [userId], references: [id])
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("playlist_activity")
 }

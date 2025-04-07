@@ -7,7 +7,8 @@ import bcryptjs from "bcryptjs";
 import { sendEmail } from "../utils/mailer.js";
 import { uploadToCloudinary } from "../utils/uploadToCloudinary.js";
 
-import zod from "zod";
+import zod, { date } from "zod";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -543,6 +544,214 @@ const checkIfMember = asyncHandler(async (request, response) => {
             );
     }
 });
+
+const updateUsername = asyncHandler(async (request, response) => {
+    const usernameZodSchema = zod.object({
+        username: zod
+            .string()
+            .min(5, "Username must be at least 5 characters long."),
+    });
+
+    try {
+        const validationResult = usernameZodSchema.safeParse(request.body);
+
+        if (!validationResult.success) {
+            throw new ApiError(500, validationResult.error.errors[0].message);
+        }
+
+        const { username } = request.body;
+        const userId = request.user.id;
+
+        const updatedUser = await prisma.user.update({
+            where: {
+                id: userId,
+            },
+            data: {
+                username: username,
+            },
+        });
+
+        if (!updatedUser) {
+            throw new ApiError(500, "Failed to update username");
+        }
+
+        return response
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    { success: true, updatedUsername: username },
+                    `Successfully updated username to ${username}.`
+                )
+            );
+    } catch (error) {
+        console.error(error?.message || "Failed to update username.");
+        return response
+            .status(error?.statusCode || 500)
+            .json(
+                new ApiResponse(
+                    error?.statusCode || 500,
+                    { success: false, updatedUsername: null },
+                    error?.message || "Failed to update username."
+                )
+            );
+    }
+});
+
+const updateEmail = asyncHandler(async (request, response) => {
+    try {
+        const { email } = request.body;
+        const userId = request.user.id;
+
+        const updatedUser = await prisma.user.update({
+            where: {
+                id: userId,
+            },
+            data: {
+                email: email,
+                refreshToken: null,
+                refreshTokenExpiration: null,
+            },
+        });
+
+        if (!updatedUser) {
+            throw new ApiError(500, "Failed to update email.");
+        }
+
+        return response
+            .status(200)
+            .clearCookie("accessToken", {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+            })
+            .clearCookie("refreshToken", {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+            })
+            .json(
+                new ApiResponse(
+                    200,
+                    { success: true, updatedEmail: email },
+                    `Successfully updated email to ${email}`
+                )
+            );
+    } catch (error) {
+        console.error(error?.message || "Failed to update email.");
+        return response
+            .status(500)
+            .json(
+                new ApiResponse(
+                    500,
+                    { success: false, updatedEmail: null },
+                    error?.message || "Failed to update email."
+                )
+            );
+    }
+});
+
+const updatePassword = asyncHandler(async (request, response) => {
+    const zodUserChangePasswordSchema = zod
+        .object({
+            password: zod
+                .string()
+                .min(6, "Password must be at least 6 characters long."),
+            confirmPassword: zod.string(),
+        })
+        .refine((data) => data.password === data.confirmPassword, {
+            message: "Passwords must match.",
+            path: ["confirmPassword"],
+        });
+
+    try {
+        const validationResult = zodUserChangePasswordSchema.safeParse(
+            request.body
+        );
+
+        if (!validationResult.success) {
+            throw new ApiError(500, validationResult.error.errors[0].message);
+        }
+
+        const { password } = request.body;
+        const userId = request.user.id;
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        const updatedUser = await prisma.user.update({
+            where: {
+                id: userId,
+            },
+            data: {
+                password: hashedPassword,
+            },
+        });
+
+        if (!updatedUser) {
+            throw new ApiError(500, "Failed to update user password");
+        }
+
+        return response
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    { success: true },
+                    "Successfully changed password."
+                )
+            );
+    } catch (error) {
+        console.error(error.message);
+        return response
+            .status(500)
+            .json(new ApiResponse(500, { success: false }, error.message));
+    }
+});
+
+const deleteProfile = asyncHandler(async (request, response) => {
+    try {
+        const userId = request.user.id;
+
+        const deletedUser = await prisma.user.delete({
+            where: {
+                id: userId,
+            },
+        });
+
+        if (!deletedUser) {
+            throw new ApiError(500, "Failed to delete profile.");
+        }
+
+        return response
+            .status(200)
+            .clearCookie("accessToken", {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+            })
+            .clearCookie("refreshToken", {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+            })
+            .json(
+                new ApiResponse(
+                    200,
+                    { success: true },
+                    "Successfully deleted profile."
+                )
+            );
+    } catch (error) {
+        console.error("Server error: ", error?.message);
+        return response
+            .status(500)
+            .json(
+                new ApiResponse(
+                    500,
+                    { success: false },
+                    error?.message || "Failed to delete profile."
+                )
+            );
+    }
+});
+
 export {
     registerUser,
     loginUser,
@@ -553,4 +762,8 @@ export {
     checkAuthentication,
     checkIfCollaborator,
     checkIfMember,
+    updateUsername,
+    updateEmail,
+    updatePassword,
+    deleteProfile,
 };

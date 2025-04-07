@@ -84,7 +84,7 @@ function SignUp() {
     return (
         <div className="mx-auto max-w-[1440px] px-6 lg:px-20 3xl:px-0 poppins-regular w-full flex justify-center items-center min-h-screen">
             <div className="flex flex-col min-w-[300px] lg:min-w-[400px] gap-8 shadow-2xl rounded-lg p-12">
-                <div className="flex flex-col lg:justify-center gap-4 bold-32 mb-4">
+                <div className="flex flex-col lg:justify-center gap-4 mb-4">
                     <a href="/">
                         <span className="text-[#ffc300] font-bold text-3xl">
                             Jockey
@@ -114,7 +114,7 @@ function SignUp() {
                         )}
                     </div>
                     <div className="flex flex-col gap-4 mb-5">
-                        <label className="regular-18" htmlFor="username">
+                        <label className="text-lg" htmlFor="username">
                             Username
                         </label>
                         <input
@@ -137,7 +137,7 @@ function SignUp() {
                         )}
                     </div>
                     <div className="flex flex-col gap-4 mb-10">
-                        <label className="regular-18" htmlFor="password">
+                        <label className="text-lg" htmlFor="password">
                             Password
                         </label>
                         <input
@@ -167,7 +167,7 @@ function SignUp() {
                         disabled={isLoading}
                     />
                 </form>
-                <p className="regular-16">
+                <p className="text-md">
                     Already have an account?{" "}
                     <span className="text-blue-600">
                         <a href={"/login"}>Log in.</a>

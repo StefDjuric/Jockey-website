@@ -23,6 +23,7 @@ import EditPlaylist from "./components/EditPlaylist/EditPlaylist.tsx";
 import JoinPlaylist from "./components/JoinPlaylistAsCollaborator/JoinPlaylistAsCollaborator.tsx";
 import About from "./components/AboutUs/AboutUs.tsx";
 import Contact from "./components/ContactUs/ContactUs.tsx";
+import EditProfile from "./components/EditProfile/EditProfile.tsx";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -46,6 +47,7 @@ const router = createBrowserRouter(
                 />
                 <Route path="playlists/create" element={<CreatePlaylist />} />
                 <Route path="join-playlist" element={<JoinPlaylist />} />
+                <Route path="edit-profile" element={<EditProfile />} />
             </Route>
         </Route>
     )
