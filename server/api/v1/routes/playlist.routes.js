@@ -19,6 +19,7 @@ import {
     getPlaylistShareCode,
     sendMessage,
     fetchMessages,
+    getAllPlaylists,
 } from "../controllers/playlist.controllers.js";
 
 const router = Router();
@@ -45,4 +46,5 @@ router
     .get(verifyJWT, getPlaylistShareCode);
 router.route("/chat/send-message").post(verifyJWT, sendMessage);
 router.route("/chat/fetch-messages/:playlistId").get(fetchMessages);
+router.route("/get-all-playlists").get(getAllPlaylists);
 export default router;

@@ -906,7 +906,6 @@ const fetchMessages = asyncHandler(async (request, response) => {
                 )
             );
     } catch (error) {
-        console.error(error?.message || "Internal server error");
         return response
             .status(error?.statusCode || 500)
             .json(
@@ -962,7 +961,6 @@ const sendMessage = asyncHandler(async (request, response) => {
                 )
             );
     } catch (error) {
-        console.error("Server error: ", error?.message);
         return response
             .status(error?.statusCode || 500)
             .json(
@@ -970,6 +968,56 @@ const sendMessage = asyncHandler(async (request, response) => {
                     error?.statusCode || 500,
                     { success: false },
                     error?.message || "Failed to send message."
+                )
+            );
+    }
+});
+
+const getAllPlaylists = asyncHandler(async (request, response) => {
+    try {
+        const sortBy = request.query["sortBy"];
+        let playlists = null;
+        if (sortBy === "POPULAR") {
+            playlists = await prisma.playlist.findMany({
+                orderBy: {
+                    likes: "desc",
+                },
+            });
+        } else if (sortBy === "RECENT") {
+            playlists = await prisma.playlist.findMany({
+                orderBy: {
+                    createdAt: "desc",
+                },
+            });
+        } else if (sortBy === "PUBLIC") {
+            playlists = await prisma.playlist.findMany({
+                where: {
+                    isPublic: true,
+                },
+            });
+        }
+
+        if (!playlists) {
+            throw new ApiError(404, "No playlists found.");
+        }
+
+        return response
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    { success: true, playlists: playlists },
+                    "Successfully fetched all playlists."
+                )
+            );
+    } catch (error) {
+        return response
+            .status(error?.statusCode || 500)
+            .json(
+                new ApiResponse(
+                    error?.statusCode || 500,
+                    { success: false, playlists: null },
+                    error?.message
                 )
             );
     }
@@ -994,4 +1042,5 @@ export {
     getPlaylistShareCode,
     fetchMessages,
     sendMessage,
+    getAllPlaylists,
 };
