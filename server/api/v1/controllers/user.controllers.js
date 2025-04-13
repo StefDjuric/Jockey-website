@@ -7,7 +7,7 @@ import bcryptjs from "bcryptjs";
 import { sendEmail } from "../utils/mailer.js";
 import { uploadToCloudinary } from "../utils/uploadToCloudinary.js";
 
-import zod, { date } from "zod";
+import zod from "zod";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
@@ -302,7 +302,6 @@ const recoverPassword = asyncHandler(async (request, response) => {
                 )
             );
     } catch (error) {
-        console.error("Failed to recover password: ", error.message);
         return response
             .status(500)
             .json(new ApiResponse(500, error, error.message));
@@ -342,7 +341,6 @@ const logOut = asyncHandler(async (request, response) => {
                 )
             );
     } catch (error) {
-        console.error("Failed to log out. ", error?.message);
         return response
             .status(500)
             .json(new ApiResponse(500, { success: false }, error.message));
@@ -383,35 +381,114 @@ const uploadImage = asyncHandler(async (request, response) => {
 
 const checkAuthentication = asyncHandler(async (request, response) => {
     try {
-        const token =
+        const accessToken =
             request.cookies?.accessToken ||
             request.header("Authorization")?.replace("Bearer", "");
 
-        if (!token) {
+        const refreshToken = request.cookies?.refreshToken;
+
+        if (!accessToken) {
+            if (refreshToken) {
+                const decodedRefreshToken = jwt.verify(
+                    refreshToken,
+                    process.env.REFRESH_TOKEN_SECRET
+                );
+
+                const user = await prisma.user.findUnique({
+                    where: {
+                        id: decodedRefreshToken.id,
+                    },
+                });
+
+                if (!user) {
+                    throw new ApiError(
+                        404,
+                        "No user found with this refresh token"
+                    );
+                }
+
+                const accessTokenPayload = {
+                    id: user.id,
+                    email: user.email,
+                    username: user.username,
+                };
+
+                if (
+                    user &&
+                    user.refreshToken === refreshToken &&
+                    user.refreshTokenExpiration > new Date()
+                ) {
+                    const newAccessToken = jwt.sign(
+                        accessTokenPayload,
+                        process.env.ACCESS_TOKEN_SECRET,
+                        {
+                            expiresIn: process.env.ACCESS_TOKEN_EXPIRATION,
+                        }
+                    );
+
+                    return response
+                        .status(200)
+                        .cookie("accessToken", newAccessToken, {
+                            httpOnly: true,
+                            secure: process.env.NODE_ENV === "production",
+                            sameSite: "strict",
+                            maxAge: 60 * 60 * 1000,
+                        })
+                        .json(
+                            new ApiResponse(
+                                200,
+                                { isLoggedIn: true },
+                                "Refreshed accessToken."
+                            )
+                        );
+                }
+
+                return response
+                    .status(401)
+                    .clearCookie("accessToken")
+                    .clearCookie("refreshToken")
+                    .json(
+                        new ApiResponse(
+                            401,
+                            {
+                                isLoggedIn: false,
+                            },
+                            "No valid access and refresh token."
+                        )
+                    );
+            } else {
+                return response
+                    .status(200)
+                    .json(
+                        new ApiResponse(
+                            200,
+                            { isLoggedIn: false },
+                            "Not logged in."
+                        )
+                    );
+            }
+        } else {
+            const decodedAccessToken = jwt.verify(
+                accessToken,
+                process.env.ACCESS_TOKEN_SECRET
+            );
+
             return response
                 .status(200)
                 .json(
                     new ApiResponse(
                         200,
-                        { isLoggedIn: false },
-                        "Not logged in."
+                        { isLoggedIn: true, user: decodedAccessToken },
+                        "Access token found. Logged in."
                     )
                 );
         }
-
-        return response
-            .status(200)
-            .json(
-                new ApiResponse(
-                    200,
-                    { isLoggedIn: true },
-                    "Access token found. Logged in."
-                )
-            );
     } catch (error) {
         return response
-            .status(500)
-            .json(new ApiResponse(500, { isLoggedIn: false }, error.message));
+            .status(401)
+            .json(new ApiResponse(401, { isLoggedIn: false }, error.message))
+            .clearCookie("accessToken")
+            .clearCookie("refreshToken");
     }
 });
 
@@ -739,7 +816,6 @@ const deleteProfile = asyncHandler(async (request, response) => {
                 )
             );
     } catch (error) {
-        console.error("Server error: ", error?.message);
         return response
             .status(500)
             .json(

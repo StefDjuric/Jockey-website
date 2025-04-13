@@ -50,8 +50,6 @@ function EditPlaylist() {
 
             setFormData({ ...formData, coverImage: data?.data?.file?.url });
 
-            console.log("Upload successfull.\n ", data);
-
             return data;
         } catch (error: any) {
             setErrors({ general: error?.message });
@@ -150,8 +148,6 @@ function EditPlaylist() {
             );
 
             const data = await response.json();
-
-            console.log(data);
 
             if (!response.ok) {
                 throw new Error(data.message || "Failed to create playlist.");
