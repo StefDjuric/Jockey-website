@@ -20,6 +20,7 @@ import {
     sendMessage,
     fetchMessages,
     getAllPlaylists,
+    removeSongFromPlaylist,
 } from "../controllers/playlist.controllers.js";
 
 const router = Router();
@@ -47,4 +48,5 @@ router
 router.route("/chat/send-message").post(verifyJWT, sendMessage);
 router.route("/chat/fetch-messages/:playlistId").get(fetchMessages);
 router.route("/get-all-playlists").get(getAllPlaylists);
+router.route("/remove-song/:songId").delete(removeSongFromPlaylist);
 export default router;

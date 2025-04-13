@@ -1023,6 +1023,62 @@ const getAllPlaylists = asyncHandler(async (request, response) => {
     }
 });
 
+const removeSongFromPlaylist = asyncHandler(async (request, response) => {
+    try {
+        const songId = request.params["songId"];
+
+        const removedSong = await prisma.playlistSong.delete({
+            where: {
+                id: parseInt(songId),
+            },
+        });
+
+        if (!removedSong) {
+            throw new ApiError(500, "Could not remove song.");
+        }
+
+        const songPosition = removedSong.position;
+
+        const playlistSongs = await prisma.playlistSong.updateMany({
+            where: {
+                playlistId: removedSong.playlistId,
+                position: {
+                    gt: songPosition,
+                },
+            },
+            data: {
+                position: {
+                    decrement: 1,
+                },
+            },
+        });
+
+        if (!playlistSongs) {
+            throw new ApiError("Could not update song positions.");
+        }
+
+        return response
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    { success: true },
+                    "Successfully removed song."
+                )
+            );
+    } catch (error) {
+        return response
+            .status(error?.statusCode || 500)
+            .json(
+                new ApiResponse(
+                    error?.statusCode || 500,
+                    { success: false },
+                    error.message
+                )
+            );
+    }
+});
+
 export {
     createPlaylist,
     getUserPlaylists,
@@ -1043,4 +1099,5 @@ export {
     fetchMessages,
     sendMessage,
     getAllPlaylists,
+    removeSongFromPlaylist,
 };

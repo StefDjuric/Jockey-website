@@ -11,6 +11,7 @@ import pauseIcon from "../../assets/pause-solid.svg";
 import ButtonWithDropdownCard from "../ButtonWithDropdownCard/ButtonWithDropdownCard";
 import PlaylistChat from "../PlaylistChat/PlaylistChat";
 import { socket } from "../../utils/socket";
+import xmarkIcon from "../../assets/xmark-solid.svg";
 
 declare global {
     interface Window {
@@ -373,8 +374,9 @@ function Playlist() {
     // Get playlist with the id
     useEffect(() => {
         getPlaylistSongs();
-    }, [playlist?.likes]);
+    }, [playlist?.likes, playlist?.songs]);
 
+    // Check if playlist is liked
     useEffect(() => {
         async function checkIfLiked() {
             try {
@@ -753,6 +755,34 @@ function Playlist() {
         return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
     };
 
+    const removeSongFromPlaylist = async (event: any, songId: number) => {
+        event.stopPropagation();
+        try {
+            console.log("Song id is: ", songId);
+            const response = await fetch(
+                `http://localhost:3000/api/v1/playlists/remove-song/${songId}`,
+                {
+                    method: "DELETE",
+                    credentials: "include",
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data?.message || "Failed to remove song.");
+            } else {
+                setSuccessMessage({ general: "Successfully removed song." });
+                const songIdx = playlist?.songs.findIndex(
+                    (song) => song.id === songId
+                );
+                if (songIdx && songIdx > -1) playlist?.songs.splice(songIdx);
+            }
+        } catch (error: any) {
+            setErrors({ general: error.message });
+        }
+    };
+
     return (
         <div className="mx-auto max-w-[1440px] px-6 lg:px-20 3xl:px-0 poppins-regular mt-5 min-h-screen w-full">
             <div className="flex flex-col gap-5">
@@ -883,11 +913,28 @@ function Playlist() {
                         </span>
                     )}
                     <div className="flex justify-between items-center p-2 bg-gray-100">
-                        <p className="text-lg w-10">#</p>
-                        <p className="text-lg w-32 flex-grow">Title</p>
-                        <p className="text-lg w-25 md:w-30">Album</p>
-                        <p className="text-lg w-30 md:w-34">Added by</p>
-                        <p className="text-lg w-28">Duration</p>
+                        <p className="text-sm lg:text-lg w-10">#</p>
+                        <p className="text-sm lg:text-lg w-32 flex-grow">
+                            Title
+                        </p>
+                        <p
+                            className={`hidden sm:block text-sm lg:text-lg md:w-30`}
+                        >
+                            Album
+                        </p>
+                        <p className={` text-sm lg:text-lg w-25 md:w-34`}>
+                            Added by
+                        </p>
+                        <p className="text-sm lg:text-lg w-20 sm:w-28 md:w-28">
+                            Duration
+                        </p>
+                        {isCollaborator || isMadeByUser ? (
+                            <p className="hidden sm:block text-sm lg:text-lg w-28 text-wrap">
+                                Remove song
+                            </p>
+                        ) : (
+                            ""
+                        )}
                     </div>
                     {playlist?.songs ? (
                         playlist.songs.length > 0 ? (
@@ -904,7 +951,7 @@ function Playlist() {
                                         playSong(song.youtubeId, index)
                                     }
                                 >
-                                    <p className="text-lg w-10">
+                                    <p className="text-sm lg:text-lg w-10">
                                         {song.position}
                                     </p>
 
@@ -926,23 +973,40 @@ function Playlist() {
                                             >
                                                 {song.title}
                                             </p>
-                                            <p className="text-[#003566]">
+                                            <p className="text-sm lg:text-lg text-[#003566]">
                                                 {song.artist}
                                             </p>
                                         </div>
                                     </div>
 
-                                    <p className="md:text-md text-sm text-[#003566] w-32 md:w-24 truncate">
+                                    <p className="md:text-md hidden sm:block text-sm text-[#003566] w-32 md:w-24 truncate">
                                         {song.album || "-"}
                                     </p>
 
-                                    <p className="text-lg text-[#003566] w-58 md:w-38 text-wrap">
+                                    <p className="text-sm lg:text-lg text-[#003566] w-58 md:w-38 text-wrap">
                                         {song.addedBy.username}
                                     </p>
 
-                                    <p className="text-lg text-[#003566] w-24">
+                                    <p className="text-sm lg:text-lg text-[#003566] w-28">
                                         {formatDuration(song.duration)}
                                     </p>
+                                    {isCollaborator || isMadeByUser ? (
+                                        <p className="text-lg text-[#003566] w-24 flex justify-center items-center">
+                                            <Button
+                                                type="button"
+                                                icon={xmarkIcon}
+                                                styling="bg-red-500 px-2 py-1 lg:px-4 lg:py-2 hover:cursor-pointer hover:bg-red-600"
+                                                onClick={(event) =>
+                                                    removeSongFromPlaylist(
+                                                        event,
+                                                        song.id
+                                                    )
+                                                }
+                                            />
+                                        </p>
+                                    ) : (
+                                        ""
+                                    )}
                                 </div>
                             ))
                         ) : (
