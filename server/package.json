@@ -16,7 +16,8 @@
         "setup": "cd ../client && npm run build",
         "test": "echo \"Error: no test specified\" && exit 1",
         "start": "node server/index.js",
-        "dev": "nodemon server/index.js"
+        "dev": "nodemon server/index.js",
+        "production": "npx prisma migrate deploy && npx nodemon"
     },
     "dependencies": {
         "@prisma/client": "^6.4.1",
