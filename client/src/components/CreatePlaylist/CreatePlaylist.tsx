@@ -27,7 +27,7 @@ function CreatePlaylist() {
 
         try {
             const response = await fetch(
-                "http://localhost:3000/api/v1/users/upload-image",
+                "https://jockey-website.onrender.com/api/v1/users/upload-image",
                 {
                     method: "POST",
                     body: fileData,
@@ -89,7 +89,7 @@ function CreatePlaylist() {
 
         try {
             const response = await fetch(
-                "http://localhost:3000/api/v1/playlists/create-playlist",
+                "https://jockey-website.onrender.com/api/v1/playlists/create-playlist",
                 {
                     method: "POST",
                     credentials: "include",

@@ -22,7 +22,7 @@ function Dashboard() {
             setIsLoading(true);
             try {
                 const response = await fetch(
-                    "http://localhost:3000/api/v1/playlists/get-user-playlists",
+                    "https://jockey-website.onrender.com/api/v1/playlists/get-user-playlists",
                     {
                         method: "GET",
                         credentials: "include",
@@ -54,7 +54,7 @@ function Dashboard() {
             setIsLoading(true);
             try {
                 const response = await fetch(
-                    "http://localhost:3000/api/v1/playlists/get-trending-playlists",
+                    "https://jockey-website.onrender.com/api/v1/playlists/get-trending-playlists",
                     {
                         method: "GET",
                         credentials: "include",
@@ -83,7 +83,7 @@ function Dashboard() {
     const handlePrivatePlaylistClick = async (playlistId: number) => {
         try {
             const response = await fetch(
-                `http://localhost:3000/api/v1/users/is-member-already/${playlistId}`,
+                `https://jockey-website.onrender.com/api/v1/users/is-member-already/${playlistId}`,
                 {
                     method: "GET",
                     credentials: "include",

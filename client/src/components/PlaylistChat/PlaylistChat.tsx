@@ -42,7 +42,7 @@ function PlaylistChat({ playlistId }: { playlistId: number }) {
 
         try {
             const response = await fetch(
-                `http://localhost:3000/api/v1/playlists/chat/fetch-messages/${playlistId}`,
+                `https://jockey-website.onrender.com/api/v1/playlists/chat/fetch-messages/${playlistId}`,
                 {
                     method: "GET",
                     credentials: "include",
@@ -72,7 +72,7 @@ function PlaylistChat({ playlistId }: { playlistId: number }) {
 
         try {
             const response = await fetch(
-                "http://localhost:3000/api/v1/playlists/chat/send-message",
+                "https://jockey-website.onrender.com/api/v1/playlists/chat/send-message",
                 {
                     method: "POST",
                     credentials: "include",

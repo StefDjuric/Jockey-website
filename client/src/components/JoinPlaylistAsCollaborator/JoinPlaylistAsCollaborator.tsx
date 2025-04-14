@@ -19,7 +19,7 @@ function JoinPlaylist() {
         async function getPlaylistDetails() {
             try {
                 const response = await fetch(
-                    `http://localhost:3000/api/v1/playlists/get-playlist-by-share-code?shareCode=${shareCode}`,
+                    `https://jockey-website.onrender.com/api/v1/playlists/get-playlist-by-share-code?shareCode=${shareCode}`,
                     {
                         method: "GET",
                         credentials: "include",
@@ -51,7 +51,7 @@ function JoinPlaylist() {
         try {
             setLoading(true);
             const response = await fetch(
-                "http://localhost:3000/api/v1/playlists/join-playlist",
+                "https://jockey-website.onrender.com/api/v1/playlists/join-playlist",
                 {
                     method: "POST",
                     credentials: "include",

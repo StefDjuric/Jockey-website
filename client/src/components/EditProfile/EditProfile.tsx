@@ -58,7 +58,7 @@ function EditProfile() {
 
         try {
             const response = await fetch(
-                `http://localhost:3000/api/v1/users/edit-username`,
+                `https://jockey-website.onrender.com/api/v1/users/edit-username`,
                 {
                     method: "PUT",
                     credentials: "include",
@@ -90,7 +90,7 @@ function EditProfile() {
 
         try {
             const response = await fetch(
-                `http://localhost:3000/api/v1/users/edit-password`,
+                `https://jockey-website.onrender.com/api/v1/users/edit-password`,
                 {
                     method: "PUT",
                     credentials: "include",
@@ -124,7 +124,7 @@ function EditProfile() {
 
         try {
             const response = await fetch(
-                `http://localhost:3000/api/v1/users/edit-email`,
+                `https://jockey-website.onrender.com/api/v1/users/edit-email`,
                 {
                     method: "PUT",
                     credentials: "include",
@@ -157,7 +157,7 @@ function EditProfile() {
 
         try {
             const response = await fetch(
-                `http://localhost:3000/api/v1/users/delete-profile`,
+                `https://jockey-website.onrender.com/api/v1/users/delete-profile`,
                 {
                     method: "DELETE",
                     credentials: "include",

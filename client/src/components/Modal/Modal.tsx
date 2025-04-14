@@ -37,7 +37,7 @@ function Modal({ OnClose, navigateTo, playlistId }: ModalProps) {
         setIsLoading(true);
         try {
             const response = await fetch(
-                "http://localhost:3000/api/v1/playlists/join-private-playlist",
+                "https://jockey-website.onrender.com/api/v1/playlists/join-private-playlist",
                 {
                     method: "POST",
                     credentials: "include",

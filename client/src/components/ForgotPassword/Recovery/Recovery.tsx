@@ -33,7 +33,7 @@ function page() {
 
         try {
             const response = await fetch(
-                "http://localhost:3000/api/v1/users/recovery",
+                "https://jockey-website.onrender.com/api/v1/users/recovery",
                 {
                     method: "POST",
                     headers: {

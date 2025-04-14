@@ -34,7 +34,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setIsLoading(true);
         try {
             const response = await fetch(
-                "http://localhost:3000/api/v1/users/check-auth",
+                "https://jockey-website.onrender.com/api/v1/users/check-auth",
                 {
                     method: "GET",
                     credentials: "include",

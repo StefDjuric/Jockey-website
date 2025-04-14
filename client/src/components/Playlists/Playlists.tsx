@@ -23,7 +23,7 @@ function Playlists() {
         setIsLoading(true);
         try {
             const response = await fetch(
-                `http://localhost:3000/api/v1/playlists/get-all-playlists?sortBy=${sortBy}`,
+                `https://jockey-website.onrender.com/api/v1/playlists/get-all-playlists?sortBy=${sortBy}`,
                 {
                     method: "GET",
                     credentials: "include",
@@ -48,7 +48,7 @@ function Playlists() {
     const handlePrivatePlaylistClick = async (playlistId: number) => {
         try {
             const response = await fetch(
-                `http://localhost:3000/api/v1/users/is-member-already/${playlistId}`,
+                `https://jockey-website.onrender.com/api/v1/users/is-member-already/${playlistId}`,
                 {
                     method: "GET",
                     credentials: "include",

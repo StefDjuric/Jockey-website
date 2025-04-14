@@ -31,7 +31,7 @@ function EditPlaylist() {
 
         try {
             const response = await fetch(
-                "http://localhost:3000/api/v1/users/upload-image",
+                "https://jockey-website.onrender.com/api/v1/users/upload-image",
                 {
                     method: "POST",
                     body: fileData,
@@ -64,7 +64,7 @@ function EditPlaylist() {
             setErrors({});
             try {
                 const response = await fetch(
-                    `http://localhost:3000/api/v1/playlists/get-playlist-songs/${playlistId}`,
+                    `https://jockey-website.onrender.com/api/v1/playlists/get-playlist-songs/${playlistId}`,
                     {
                         method: "GET",
                         credentials: "include",
@@ -136,7 +136,7 @@ function EditPlaylist() {
         try {
             console.log(JSON.stringify(formData));
             const response = await fetch(
-                `http://localhost:3000/api/v1/playlists/edit-playlist/${playlistId}`,
+                `https://jockey-website.onrender.com/api/v1/playlists/edit-playlist/${playlistId}`,
                 {
                     method: "PUT",
                     credentials: "include",

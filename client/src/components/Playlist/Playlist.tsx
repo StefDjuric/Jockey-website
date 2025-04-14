@@ -110,7 +110,7 @@ function Playlist() {
     const handleDeletePlaylist = async () => {
         try {
             const response = await fetch(
-                `http://localhost:3000/api/v1/playlists/delete-playlist/${playlist?.id}`,
+                `https://jockey-website.onrender.com/api/v1/playlists/delete-playlist/${playlist?.id}`,
                 {
                     method: "DELETE",
                     credentials: "include",
@@ -135,7 +135,7 @@ function Playlist() {
         setErrors({});
         try {
             const response = await fetch(
-                "http://localhost:3000/api/v1/playlists/invite-collaborators",
+                "https://jockey-website.onrender.com/api/v1/playlists/invite-collaborators",
                 {
                     method: "PUT",
                     credentials: "include",
@@ -179,7 +179,7 @@ function Playlist() {
         : async () => {
               try {
                   const response = await fetch(
-                      `http://localhost:3000/api/v1/playlists/get-share-code/${playlistId}`,
+                      `https://jockey-website.onrender.com/api/v1/playlists/get-share-code/${playlistId}`,
                       {
                           method: "GET",
                           credentials: "include",
@@ -260,7 +260,7 @@ function Playlist() {
             setErrors({});
             try {
                 const response = await fetch(
-                    `http://localhost:3000/api/v1/playlists/is-made-by-user/${playlistId}`,
+                    `https://jockey-website.onrender.com/api/v1/playlists/is-made-by-user/${playlistId}`,
                     {
                         method: "GET",
                         credentials: "include",
@@ -288,7 +288,7 @@ function Playlist() {
             setErrors({});
             try {
                 const response = await fetch(
-                    `http://localhost:3000/api/v1/users/check-if-collaborator/${playlistId}`,
+                    `https://jockey-website.onrender.com/api/v1/users/check-if-collaborator/${playlistId}`,
                     {
                         method: "GET",
                         credentials: "include",
@@ -317,7 +317,7 @@ function Playlist() {
         setErrors({});
         try {
             const response = await fetch(
-                `http://localhost:3000/api/v1/playlists/get-playlist-songs/${playlistId}`,
+                `https://jockey-website.onrender.com/api/v1/playlists/get-playlist-songs/${playlistId}`,
                 {
                     method: "GET",
                     credentials: "include",
@@ -382,7 +382,7 @@ function Playlist() {
             try {
                 setErrors({});
                 const response = await fetch(
-                    `http://localhost:3000/api/v1/playlists/check-if-liked/${playlistId}`,
+                    `https://jockey-website.onrender.com/api/v1/playlists/check-if-liked/${playlistId}`,
                     {
                         method: "GET",
                         credentials: "include",
@@ -409,7 +409,7 @@ function Playlist() {
     const handleLike = async () => {
         try {
             const response = await fetch(
-                `http://localhost:3000/api/v1/playlists/like-playlist`,
+                `https://jockey-website.onrender.com/api/v1/playlists/like-playlist`,
                 {
                     method: "PUT",
                     credentials: "include",
@@ -599,7 +599,7 @@ function Playlist() {
         setErrors({});
         try {
             const response = await fetch(
-                `http://localhost:3000/api/v1/playlists/update-song-status`,
+                `https://jockey-website.onrender.com/api/v1/playlists/update-song-status`,
                 {
                     method: "PUT",
                     credentials: "include",
@@ -636,7 +636,7 @@ function Playlist() {
 
         try {
             const response = await fetch(
-                `http://localhost:3000/api/v1/youtube/search?q=${encodeURIComponent(
+                `https://jockey-website.onrender.com/api/v1/youtube/search?q=${encodeURIComponent(
                     searchQuery
                 )}`,
                 {
@@ -665,7 +665,7 @@ function Playlist() {
             const durationInSeconds = convertDurationToSeconds(result.duration);
 
             const response = await fetch(
-                "http://localhost:3000/api/v1/playlists/add-song",
+                "https://jockey-website.onrender.com/api/v1/playlists/add-song",
                 {
                     method: "POST",
                     credentials: "include",
@@ -760,7 +760,7 @@ function Playlist() {
         try {
             console.log("Song id is: ", songId);
             const response = await fetch(
-                `http://localhost:3000/api/v1/playlists/remove-song/${songId}`,
+                `https://jockey-website.onrender.com/api/v1/playlists/remove-song/${songId}`,
                 {
                     method: "DELETE",
                     credentials: "include",

@@ -53,7 +53,7 @@ function SignUp() {
 
         try {
             const response = await fetch(
-                "http://localhost:3000/api/v1/users/register",
+                "https://jockey-website.onrender.com/api/v1/users/register",
                 {
                     method: "POST",
                     headers: {
