@@ -161,13 +161,13 @@ const loginUser = asyncHandler(async (request, response) => {
             .cookie("accessToken", accessToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
-                sameSite: "strict",
+                sameSite: "None",
                 maxAge: 60 * 60 * 1000,
             })
             .cookie("refreshToken", refreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
-                sameSite: "strict",
+                sameSite: "None",
                 maxAge: 7 * 24 * 60 * 60 * 1000,
             })
             .json(
@@ -431,7 +431,7 @@ const checkAuthentication = asyncHandler(async (request, response) => {
                         .cookie("accessToken", newAccessToken, {
                             httpOnly: true,
                             secure: process.env.NODE_ENV === "production",
-                            sameSite: "strict",
+                            sameSite: "None",
                             maxAge: 60 * 60 * 1000,
                         })
                         .json(
