@@ -4,6 +4,10 @@
 
 ### This website is being developed with NodeJS/Express/Postgresql/Prisma/React.
 
+### This website is LIVE
+
+Check out the deployed live website [here](https://jovial-pasca-0cd9b0.netlify.app/).
+
 ### Important
 
 No .env file was pushed to github and app is being made with local postgresql db, so some functionality might not work if repo is cloned
