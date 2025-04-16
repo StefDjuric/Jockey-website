@@ -40,7 +40,7 @@ export const sendEmail = asyncHandler(async ({ email, userId }) => {
             to: email,
             subject: "Reset your Jockey password",
             html: `<h1>Jockey.</h1>
-            <p>Click <a href="https://jockey-website.onrender.com/forgot-password/recovery?token=${hashedToken}">here</a> to reset your password.</p>`,
+            <p>Click <a href="https://jovial-pasca-0cd9b0.netlify.app/forgot-password/recovery?token=${hashedToken}">here</a> to reset your password.</p>`,
         };
 
         const mailResponse = await transporter.sendMail(mailOptions);
