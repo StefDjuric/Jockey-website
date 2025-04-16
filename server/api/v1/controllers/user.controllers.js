@@ -327,6 +327,7 @@ const logOut = asyncHandler(async (request, response) => {
         const options = {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
+            sameSite: "None",
         };
 
         return response
@@ -353,7 +354,10 @@ const uploadImage = asyncHandler(async (request, response) => {
             throw new ApiError(400, "No file uploaded");
         }
 
-        const cloudinaryResult = await uploadToCloudinary(request.file.path);
+        const cloudinaryResult = await uploadToCloudinary(
+            request.file.buffer,
+            request.file.mimetype
+        );
 
         if (!cloudinaryResult) {
             throw new ApiError(500, "Failed to upload to cloudinary.");
@@ -373,9 +377,16 @@ const uploadImage = asyncHandler(async (request, response) => {
             )
         );
     } catch (error) {
+        console.error("Upload error:", error);
         return response
-            .status(500)
-            .json(new ApiResponse(500, { success: false }, error.message));
+            .status(error?.statusCode || 500)
+            .json(
+                new ApiResponse(
+                    error?.statusCode || 500,
+                    { success: false },
+                    error?.message || "Internal server error."
+                )
+            );
     }
 });
 

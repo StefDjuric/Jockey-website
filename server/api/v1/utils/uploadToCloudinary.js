@@ -10,10 +10,15 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const uploadToCloudinary = async (localFilePath) => {
+const uploadToCloudinary = async (fileBuffer, mimeType) => {
     try {
-        if (!localFilePath) return null;
-        const uploadResult = await cloudinary.uploader.upload(localFilePath, {
+        if (!fileBuffer) return null;
+
+        // Convert buffer to base64 string
+        const b64 = Buffer.from(fileBuffer).toString("base64");
+        const dataURI = `data:${mimeType};base64,${b64}`;
+
+        const uploadResult = await cloudinary.uploader.upload(dataURI, {
             resource_type: "auto",
         });
 
@@ -21,12 +26,9 @@ const uploadToCloudinary = async (localFilePath) => {
             "File uploaded to cloudinary, file src: " + uploadResult.url
         );
 
-        fs.unlinkSync(localFilePath);
-
         return uploadResult;
     } catch (error) {
         console.error("Cloudinary error. ", error);
-        fs.unlinkSync(localFilePath);
         return null;
     }
 };
